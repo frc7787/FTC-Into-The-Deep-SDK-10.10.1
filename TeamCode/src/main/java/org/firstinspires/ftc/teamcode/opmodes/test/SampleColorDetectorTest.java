@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.R;
 import org.firstinspires.ftc.teamcode.vision.color.SampleColor;
 import org.firstinspires.ftc.teamcode.vision.color.SampleColorDetector;
 import org.firstinspires.ftc.teamcode.vision.color.SampleDetection;
