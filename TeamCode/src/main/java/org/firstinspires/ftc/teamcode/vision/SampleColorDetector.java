@@ -42,14 +42,14 @@ public final class SampleColorDetector extends OpenCvPipeline {
     @Override public Mat processFrame(Mat input) {
         sampleDetections = new ArrayList<>();
 
-        Imgproc.cvtColor(input, hsvMat, Imgproc.COLOR_RGB2HSV);
-
-        detectSample(hsvMat, sampleColor);
+        detectSample(input, sampleColor);
 
         return input;
     }
 
     private synchronized void detectSample(@NonNull Mat input, @NonNull SampleColor color) {
+        Imgproc.cvtColor(input, hsvMat, Imgproc.COLOR_RGB2HSV);
+
         switch (color) {
             case RED:
                 // Check if the image is in range, then adds the ranges together
