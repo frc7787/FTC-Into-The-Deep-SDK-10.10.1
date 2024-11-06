@@ -18,8 +18,6 @@ import static org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit.AM
 import static org.firstinspires.ftc.teamcode.Constants.ArmConstants.*;
 
 public final class ArmSubsystem extends SubsystemBase {
-    private final double POSITIVE_EXTENSION_LIMIT_TICKS = 3000;
-
     private enum HomingState {
         START,
         HOMING_ROTATION,
@@ -82,7 +80,7 @@ public final class ArmSubsystem extends SubsystemBase {
                 double extensionDistanceTicks
                         = extensionTargetPosition * Math.cosh(extensionAngleRadians);
 
-                if (extensionDistanceTicks > POSITIVE_EXTENSION_LIMIT_TICKS) {
+                if (extensionDistanceTicks > EXTENSION_LIMIT) {
                     extensionTargetPosition
                             = (int) (extensionTargetPosition * Math.cosh(extensionAngleRadians));
                 }

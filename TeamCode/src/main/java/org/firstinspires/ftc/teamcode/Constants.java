@@ -22,7 +22,8 @@ public final class Constants {
     }
 
     public static class ArmConstants {
-        public static int ROTATION_HOME_POSITION = 500;
+        public static int EXTENSION_LIMIT = 0;
+        public static int ROTATION_HOME_POSITION = 0;
     }
 
     public static class DrivebaseConstants {
