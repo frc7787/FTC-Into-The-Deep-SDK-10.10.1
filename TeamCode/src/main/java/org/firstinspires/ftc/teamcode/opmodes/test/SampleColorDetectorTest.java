@@ -7,7 +7,11 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.R;
+import org.firstinspires.ftc.teamcode.vision.color.SampleColor;
 import org.firstinspires.ftc.teamcode.vision.color.SampleColorDetector;
+import org.firstinspires.ftc.teamcode.vision.color.SampleDetection;
+import org.opencv.core.Rect;
 import org.openftc.easyopencv.*;
 
 @TeleOp(name = "Test - Sample Color Detector", group = "Test")
@@ -15,15 +19,20 @@ public final class SampleColorDetectorTest extends CommandOpMode {
     private OpenCvCamera camera;
     private SampleColorDetector sampleDetector;
     private Gamepad currentGamepad, previousGamepad;
+    private SampleColor detectionColor;
 
     @Override public void initialize() {
-        sampleDetector  = new SampleColorDetector(YELLOW);
+        detectionColor = YELLOW;
+
+        sampleDetector  = new SampleColorDetector(detectionColor);
         currentGamepad  = new Gamepad();
         previousGamepad = new Gamepad();
         initializeWebcam();
 
         schedule(
                 new RunCommand(this::displayInstructions),
+                new RunCommand(telemetry::addLine),
+                new RunCommand(this::displayLargestDetectionInformation),
                 new RunCommand(this::toggleSampleColor),
                 new RunCommand(telemetry::update)
         );
@@ -55,6 +64,21 @@ public final class SampleColorDetectorTest extends CommandOpMode {
         });
     }
 
+    private void displayLargestDetectionInformation() {
+        SampleDetection largestDetection = sampleDetector.getLargestDetection(detectionColor);
+
+        if (largestDetection == null) {
+            telemetry.addLine("Nothing Detected");
+        } else {
+            Rect largestDetectionRectangle = largestDetection.rect;
+            telemetry.addData("Largest Detection Area", largestDetectionRectangle.area());
+            telemetry.addData("Largest Detection Width", largestDetectionRectangle.width);
+            telemetry.addData("Largest Detection Height", largestDetectionRectangle.height);
+            telemetry.addData("Largest Detection X", largestDetectionRectangle.x);
+            telemetry.addData("Largest Detection Y", largestDetectionRectangle.y);
+        }
+    }
+
     private void displayInstructions() {
         telemetry.addLine("Press Left Bumper To Toggle Between Colors");
     }
@@ -66,15 +90,17 @@ public final class SampleColorDetectorTest extends CommandOpMode {
         if (currentGamepad.left_bumper && !previousGamepad.left_bumper) {
             switch (sampleDetector.detectionColor()) {
                 case RED:
-                    sampleDetector.setSampleColor(BLUE);
+                    detectionColor = BLUE;
                     break;
                 case BLUE:
-                    sampleDetector.setSampleColor(YELLOW);
+                    detectionColor = YELLOW;
                     break;
                 case YELLOW:
-                    sampleDetector.setSampleColor(RED);
+                    detectionColor = RED;
                     break;
             }
         }
+
+        sampleDetector.setSampleColor(detectionColor);
     }
 }
