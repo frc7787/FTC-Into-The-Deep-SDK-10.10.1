@@ -4,21 +4,22 @@ import static org.firstinspires.ftc.teamcode.vision.SampleColor.*;
 
 import com.arcrobotics.ftclib.command.*;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.subsystems.tankdrive.TankDriveSubsystem;
-import org.firstinspires.ftc.teamcode.utility.PIDController;
 import org.firstinspires.ftc.teamcode.vision.SampleColorDetector;
-import org.firstinspires.ftc.teamcode.vision.SampleDetection;
 import org.openftc.easyopencv.*;
 
 @TeleOp(name = "Test - Sample Color Detector", group = "Test")
 public final class SampleColorDetectorTest extends CommandOpMode {
     private OpenCvCamera camera;
     private SampleColorDetector sampleDetector;
+    private Gamepad currentGamepad, previousGamepad;
 
     @Override public void initialize() {
-        sampleDetector = new SampleColorDetector(YELLOW);
+        sampleDetector  = new SampleColorDetector(YELLOW);
+        currentGamepad  = new Gamepad();
+        previousGamepad = new Gamepad();
         initializeWebcam();
     }
 
@@ -46,5 +47,28 @@ public final class SampleColorDetectorTest extends CommandOpMode {
                 telemetry.update();
             }
         });
+    }
+
+    private void displayInstructions() {
+        telemetry.addLine("Press Left Bumper To Toggle Between Colors");
+    }
+
+    private void toggleSampleColor() {
+        previousGamepad.copy(currentGamepad);
+        currentGamepad.copy(gamepad1);
+
+        if (currentGamepad.left_bumper && !previousGamepad.left_bumper) {
+            switch (sampleDetector.detectionColor()) {
+                case RED:
+                    sampleDetector.setSampleColor(BLUE);
+                    break;
+                case BLUE:
+                    sampleDetector.setSampleColor(YELLOW);
+                    break;
+                case YELLOW:
+                    sampleDetector.setSampleColor(RED);
+                    break;
+            }
+        }
     }
 }

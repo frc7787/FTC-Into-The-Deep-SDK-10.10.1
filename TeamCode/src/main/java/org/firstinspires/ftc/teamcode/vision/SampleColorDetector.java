@@ -127,4 +127,8 @@ public final class SampleColorDetector extends OpenCvPipeline {
 
         return largestDetection;
     }
+
+    @NonNull public SampleColor detectionColor() {
+       return sampleColor;
+    }
 }
