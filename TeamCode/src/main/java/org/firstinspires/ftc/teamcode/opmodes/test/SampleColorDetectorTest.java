@@ -1,36 +1,39 @@
-﻿package org.firstinspires.ftc.teamcode.opmodes.test;
+package org.firstinspires.ftc.teamcode.opmodes.test;
 
+import static org.firstinspires.ftc.teamcode.vision.color.SampleColor.*;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.arcrobotics.ftclib.command.*;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.subsystems.tankdrive.TankDriveSubsystem;
+import org.firstinspires.ftc.teamcode.vision.color.SampleColorDetector;
 import org.openftc.easyopencv.*;
 
 @TeleOp(name = "Test - Sample Color Detector", group = "Test")
-public final class SampleColorDetectorTest extends OpMode {
-    private final double KP = 0.004;
-    private final double KD = 0.000014;
-
+public final class SampleColorDetectorTest extends CommandOpMode {
     private OpenCvCamera camera;
-    private SampleDetector sampleDetector;
-    private TankDriveSubsystem tankDriveSubsystem;
+    private SampleColorDetector sampleDetector;
+    private Gamepad currentGamepad, previousGamepad;
 
-    @Override public void init() {
-        sampleDetector     = new SampleDetector();
+    @Override public void initialize() {
+        sampleDetector  = new SampleColorDetector(YELLOW);
+        currentGamepad  = new Gamepad();
+        previousGamepad = new Gamepad();
         initializeWebcam();
+
+        schedule(
+                new RunCommand(this::displayInstructions),
+                new RunCommand(this::toggleSampleColor),
+                new RunCommand(telemetry::update)
+        );
     }
 
     private void initializeWebcam() {
         int cameraMonitorViewId = hardwareMap
                 .appContext
                 .getResources()
-                .getIdentifier(
-                        "cameraMonitorViewId",
-                        "id",
-                        hardwareMap.appContext.getPackageName()
-                );
+                .getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
 
         camera = OpenCvCameraFactory
                 .getInstance()
@@ -52,8 +55,26 @@ public final class SampleColorDetectorTest extends OpMode {
         });
     }
 
-    @Override public void loop() {
+    private void displayInstructions() {
+        telemetry.addLine("Press Left Bumper To Toggle Between Colors");
+    }
 
+    private void toggleSampleColor() {
+        previousGamepad.copy(currentGamepad);
+        currentGamepad.copy(gamepad1);
+
+        if (currentGamepad.left_bumper && !previousGamepad.left_bumper) {
+            switch (sampleDetector.detectionColor()) {
+                case RED:
+                    sampleDetector.setSampleColor(BLUE);
+                    break;
+                case BLUE:
+                    sampleDetector.setSampleColor(YELLOW);
+                    break;
+                case YELLOW:
+                    sampleDetector.setSampleColor(RED);
+                    break;
+            }
+        }
     }
 }
-
