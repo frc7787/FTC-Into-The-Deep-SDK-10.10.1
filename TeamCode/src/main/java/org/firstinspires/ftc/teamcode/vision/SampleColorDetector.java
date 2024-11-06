@@ -15,7 +15,6 @@ import java.util.List;
 
 /**
  * OpenCV pipeline to detect the different colored samples for the FTC 2024-2025 game Into The Deep
- * @Author Tyler Stocks
  */
 public final class SampleColorDetector extends OpenCvPipeline {
     private final Mat hsvMat          = new Mat(),
@@ -29,14 +28,23 @@ public final class SampleColorDetector extends OpenCvPipeline {
                       cvDilateKernel  = new Mat();
 
     private ArrayList<SampleDetection> sampleDetections = new ArrayList<>();
-    private SampleDetection largestDetection, largestRedSample, largestYellowSample, largestGreenSample;
+
+    private SampleColor sampleColor;
+
+    public SampleColorDetector(@NonNull SampleColor sampleColor) {
+       this.sampleColor = sampleColor;
+    }
+
+    public void setSampleColor(@NonNull SampleColor sampleColor) {
+        this.sampleColor = sampleColor;
+    }
 
     @Override public Mat processFrame(Mat input) {
         sampleDetections = new ArrayList<>();
 
         Imgproc.cvtColor(input, hsvMat, Imgproc.COLOR_RGB2HSV);
 
-        detectSample(input, YELLOW);
+        detectSample(hsvMat, sampleColor);
 
         return input;
     }
