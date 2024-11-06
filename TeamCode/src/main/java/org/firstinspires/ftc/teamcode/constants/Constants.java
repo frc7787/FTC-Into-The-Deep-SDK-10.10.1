@@ -64,14 +64,14 @@ public final class Constants {
         public static Scalar LOW_HSV_RANGE_BLUE  = new Scalar(97, 50, 0);
         public static Scalar HIGH_HSV_RANGE_BLUE = new Scalar(125, 255, 255);
 
-        public static Scalar LOW_HSV_RANGE_RED_ONE  = new Scalar(170, 70, 50);
+        public static Scalar LOW_HSV_RANGE_RED_ONE  = new Scalar(170, 50, 50);
         public static Scalar HIGH_HSV_RANGE_RED_ONE = new Scalar(180, 255, 255);
 
-        public static Scalar LOW_HSV_RANGE_RED_TWO  = new Scalar(0, 70, 50);
+        public static Scalar LOW_HSV_RANGE_RED_TWO  = new Scalar(0, 50, 50);
         public static Scalar HIGH_HSV_RANGE_RED_TWO = new Scalar(10, 255, 255);
 
-        public static Scalar LOW_HSV_RANGE_YELLOW = new Scalar(20, 80, 0);
-        public static Scalar HIGH_HSV_RANGE_YELLOW = new Scalar(30, 255, 255);
+        public static Scalar LOW_HSV_RANGE_YELLOW = new Scalar(25, 50, 0);
+        public static Scalar HIGH_HSV_RANGE_YELLOW = new Scalar(35, 255, 255);
 
         public static final Point CV_ANCHOR        = new Point(-1, -1);
         public static final Scalar CV_BORDER_VALUE = new Scalar(-1);
