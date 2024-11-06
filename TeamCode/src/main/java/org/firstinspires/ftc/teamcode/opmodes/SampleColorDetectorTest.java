@@ -21,6 +21,12 @@ public final class SampleColorDetectorTest extends CommandOpMode {
         currentGamepad  = new Gamepad();
         previousGamepad = new Gamepad();
         initializeWebcam();
+
+        schedule(
+                new RunCommand(this::displayInstructions),
+                new RunCommand(this::toggleSampleColor),
+                new RunCommand(telemetry::update)
+        );
     }
 
     private void initializeWebcam() {
