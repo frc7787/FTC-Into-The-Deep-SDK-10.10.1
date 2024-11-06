@@ -90,12 +90,24 @@ public final class ArmSubsystem extends SubsystemBase {
         }
     }
 
-    public void setArmPower(double extensionPower, double rotationPower) {
+    /**
+     * Sets the power of the arm motors, should only be used for debugging purposes
+     * @param extensionPower The power to supply the extension motors
+     * @param rotationPower The power to supply the rotation motors
+     */
+    public void debugSetArmPower(double extensionPower, double rotationPower) {
         extensionMotorOne.setPower(extensionPower);
         extensionMotorTwo.setPower(extensionPower);
         rotationMotor.setPower(rotationPower);
     }
 
+    /**
+     * Extends the arm to the target position. Must be called continually or the arm will keep
+     * extending until it physically cannot, which will probably break something.
+     * @param targetPosition The position to extend to
+     * @param maxPower The maximum power to supply to extension motors while moving to the target
+     *                 position
+     */
     private void extend(int targetPosition, double maxPower) {
         int currentPosition = extensionMotorOne.getCurrentPosition();
         double power = extensionController.calculate(currentPosition, targetPosition);
@@ -104,10 +116,22 @@ public final class ArmSubsystem extends SubsystemBase {
         extensionMotorTwo.setPower(power);
     }
 
+    /**
+     * Extends the arm to the target position. Must be called continually or the arm will keep
+     * extending until it physically cannot, which will probably break something.
+     * @param targetPosition The position to extend to
+     */
     private void extend(int targetPosition) {
         extend(targetPosition, 1.0);
     }
 
+    /**
+     * Rotates the arm to the target position. Mut be called continually or the arm will keep
+     * rotating until it physically cannot, which will probably break something.
+     * @param targetPosition The position to rotate to
+     * @param maxPower The maximum power to supply the rotation motor while moving to the target
+     *                 position.
+     */
     private void rotate(int targetPosition, double maxPower) {
         int currentPosition = rotationMotor.getCurrentPosition();
         double power = rotationController.calculate(currentPosition, targetPosition);
@@ -115,10 +139,20 @@ public final class ArmSubsystem extends SubsystemBase {
         rotationMotor.setPower(power);
     }
 
+    /**
+     * Rotates the arm to the target position. Mut be called continually or the arm will keep
+     * rotating until it physically cannot, which will probably break something.
+     * @param targetPosition The position to rotate to
+     */
     private void rotate(int targetPosition) {
         rotate(targetPosition, 1.0);
     }
 
+    /**
+     * Runs the homing sequence of the arm. This function is not blocking and should be called
+     * continually until it is finished. Once it is finished it will set the armState variable to
+     * AT_POS from which normal control of the robot can be resumed.
+     */
     private void home() {
         switch (homingState) {
             case START:
@@ -159,16 +193,31 @@ public final class ArmSubsystem extends SubsystemBase {
         }
     }
 
+    /**
+     * @return The current position of extensionMotorOne
+     */
     public int extensionCurrentPosition() {
         return extensionMotorOne.getCurrentPosition();
     }
 
+    /**
+     * Displays full debug information about the arm
+     */
     public void debugAll() {
        debugGlobal();
        debugRotation();
        debugExtension();
     }
 
+    /**
+     * Displays debug information about the global state of the arm. The information displayed
+     * includes the following:
+     * <ul>
+     *     <li>Arm State</li>
+     *     <li>Homing State</li>
+     *     <li>The states of both of the limit switches</li>
+     * </ul>
+     */
     public void debugGlobal() {
         telemetry.addLine("----- Global -----");
         telemetry.addData("Arm State", armState);
@@ -177,16 +226,41 @@ public final class ArmSubsystem extends SubsystemBase {
         telemetry.addData("Extension Limit Switch Pressed", extensionLimitSwitch.isPressed());
     }
 
+    /**
+     * Displays debug information about the rotation motor. The information displayed is as follows:
+     * <ul>
+     *     <li>The power</li>
+     *     <li>The current and target position</li>
+     *     <li>The current draw, in amps</li>
+     *     <li>The direction </li>
+     *     <li>The zero power behaviour </li>
+     *     <li>The run mode </li>
+     * </ul>
+     */
     public void debugRotation() {
-        telemetry.addLine("----- Rotation Motor One -----");
+        telemetry.addLine("----- Rotation Motor -----");
         telemetry.addData("Power", rotationMotor.getPower());
         telemetry.addData("Position", rotationMotor.getCurrentPosition());
         telemetry.addData("Target Position (Subsystem)", rotationTargetPosition);
         telemetry.addData("Target Position (Motor)", rotationMotor.getTargetPosition());
         telemetry.addData("Current (AMPS)", rotationMotor.getCurrent(AMPS));
         telemetry.addData("Direction", rotationMotor.getDirection());
+        telemetry.addData("Zero Power Behaviour", rotationMotor.getZeroPowerBehavior());
+        telemetry.addData("Run Mode", rotationMotor.getMode());
     }
 
+    /**
+     * Displays debug information about extension motor one. The information displayed is as
+     * follows:
+     * <ul>
+     *     <li>The power</li>
+     *     <li>The current and target position</li>
+     *     <li>The current draw, in amps</li>
+     *     <li>The direction </li>
+     *     <li>The zero power behaviour </li>
+     *     <li>The run mode </li>
+     * </ul>
+     */
     public void debugExtensionMotorOne() {
         telemetry.addLine("----- Extension Motor One -----");
         telemetry.addData("Power", extensionMotorOne.getPower());
@@ -195,8 +269,22 @@ public final class ArmSubsystem extends SubsystemBase {
         telemetry.addData("Target Position (Motor)", extensionMotorOne.getTargetPosition());
         telemetry.addData("Current (AMPS)", extensionMotorOne.getCurrent(AMPS));
         telemetry.addData("Direction", extensionMotorOne.getDirection());
+        telemetry.addData("Zero Power Behaviour", extensionMotorOne.getZeroPowerBehavior());
+        telemetry.addData("Run Mode", extensionMotorOne.getMode());
     }
 
+    /**
+     * Displays debug information about extension motor two. The information displayed is as
+     * follows:
+     * <ul>
+     *     <li>The power</li>
+     *     <li>The current and target position</li>
+     *     <li>The current draw, in amps</li>
+     *     <li>The direction </li>
+     *     <li>The zero power behaviour </li>
+     *     <li>The run mode </li>
+     * </ul>
+     */
     public void debugExtensionMotorTwo() {
         telemetry.addLine("----- Extension Motor Two -----");
         telemetry.addData("Power", extensionMotorTwo.getPower());
@@ -205,14 +293,38 @@ public final class ArmSubsystem extends SubsystemBase {
         telemetry.addData("Target Position", extensionMotorTwo.getTargetPosition());
         telemetry.addData("Current (AMPS)", extensionMotorTwo.getCurrent(AMPS));
         telemetry.addData("Direction", extensionMotorTwo.getDirection());
+        telemetry.addData("Zero Power Behaviour", extensionMotorTwo.getZeroPowerBehavior());
+        telemetry.addData("Run Mode", extensionMotorOne.getMode());
     }
 
+    /**
+     * Displays debug information about both extension motors. The information displayed is as
+     * follows:
+     * <ul>
+     *     <li>The power</li>
+     *     <li>The current and target position</li>
+     *     <li>The current draw, in amps</li>
+     *     <li>The direction </li>
+     *     <li>The zero power behaviour </li>
+     *     <li>The run mode </li>
+     * </ul>
+     */
     public void debugExtension() {
         debugExtensionMotorOne();
         debugExtensionMotorTwo();
     }
 
-    public void displayCurrent() {
+    /**
+     * Displays information about the current draw, in amps, of the motors. The information
+     * displayed is as follows:
+     * <ul>
+     *     <li>The combined current of the extension motors</li>
+     *     <li>The current of the rotation motor</li>
+     *     <li>The maximum combined current of the extension motors</li>
+     *     <li>The maximum current of the rotation motors</li>
+     * </ul>
+     */
+    public void debugCurrent() {
        double extensionCurrentAverage
                = extensionMotorOne.getCurrent(AMPS) + extensionMotorTwo.getCurrent(AMPS);
        double rotationCurrentAverage
@@ -232,6 +344,11 @@ public final class ArmSubsystem extends SubsystemBase {
        telemetry.addData("Extension Current", extensionCurrentAverage);
     }
 
+    /**
+     * Converts the input ticks, from the arm, to its rotation
+     * @param ticks The position of the rotation motor
+     * @return The angle of the rotation motor in degrees
+     */
     private double rotationTicksToRadians(int ticks) {
        return ticks;
     }

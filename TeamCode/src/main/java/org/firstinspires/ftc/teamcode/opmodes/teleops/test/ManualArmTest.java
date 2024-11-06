@@ -15,7 +15,7 @@ public final class ManualArmTest extends OpMode {
     @Override public void loop() {
         telemetry.addLine("Control The Rotation With The Left Stick Y");
         telemetry.addLine("Control The Extension With The Right Stick Y");
-        armSubsystem.setArmPower(
+        armSubsystem.debugSetArmPower(
                 gamepad1.left_stick_y  * -1.0,
                 gamepad1.right_stick_y * -1.0
         );
