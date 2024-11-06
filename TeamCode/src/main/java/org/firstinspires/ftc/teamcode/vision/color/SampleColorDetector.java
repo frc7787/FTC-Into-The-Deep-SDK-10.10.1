@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.vision;
+package org.firstinspires.ftc.teamcode.vision.color;
 
 import static org.firstinspires.ftc.teamcode.constants.Constants.VisionConstants.*;
 

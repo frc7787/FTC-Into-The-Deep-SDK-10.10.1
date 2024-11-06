@@ -1,13 +1,13 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import static org.firstinspires.ftc.teamcode.vision.SampleColor.*;
+import static org.firstinspires.ftc.teamcode.vision.color.SampleColor.*;
 
 import com.arcrobotics.ftclib.command.*;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.vision.SampleColorDetector;
+import org.firstinspires.ftc.teamcode.vision.color.SampleColorDetector;
 import org.openftc.easyopencv.*;
 
 @TeleOp(name = "Test - Sample Color Detector", group = "Test")
