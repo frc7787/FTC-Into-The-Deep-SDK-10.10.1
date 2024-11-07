@@ -18,18 +18,6 @@ import static org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit.AM
 import static org.firstinspires.ftc.teamcode.Constants.ArmConstants.*;
 
 public final class ArmSubsystem extends SubsystemBase {
-    private enum HomingState {
-        START,
-        HOMING_ROTATION,
-        HOMING_EXTENSION,
-        FINISHED
-    }
-
-    private enum ArmState {
-        HOMING,
-        AT_POS,
-        TO_POS
-    }
 
     private double maxRotationCurrent = 0;
     private double maxExtensionCurrent = 0;
@@ -68,6 +56,10 @@ public final class ArmSubsystem extends SubsystemBase {
     }
 
     @Override public void periodic() {
+        if (debug) {
+
+        }
+
         switch (armState) {
             case HOMING:
                 home();
@@ -102,8 +94,9 @@ public final class ArmSubsystem extends SubsystemBase {
     }
 
     /**
-     * Extends the arm to the target position. Must be called continually or the arm will keep
-     * extending until it physically cannot, which will probably break something.
+     * Extends the arm to the target position at the specified power. Must be called continually
+     * or the arm will keep extending until it physically cannot, which will probably break
+     * something.
      * @param targetPosition The position to extend to
      * @param maxPower The maximum power to supply to extension motors while moving to the target
      *                 position
@@ -117,17 +110,19 @@ public final class ArmSubsystem extends SubsystemBase {
     }
 
     /**
-     * Extends the arm to the target position. Must be called continually or the arm will keep
-     * extending until it physically cannot, which will probably break something.
+     * Extends the arm to the target position at the power defined by DEFAULT_EXTENSION_POWER.
+     * Must be called continually or the arm will keep extending until it physically cannot,
+     * which will probably break something.
      * @param targetPosition The position to extend to
      */
     private void extend(int targetPosition) {
-        extend(targetPosition, 1.0);
+        extend(targetPosition, DEFAULT_EXTENSION_POWER);
     }
 
     /**
-     * Rotates the arm to the target position. Mut be called continually or the arm will keep
-     * rotating until it physically cannot, which will probably break something.
+     * Rotates the arm to the target position at the specified power. Must be called continually
+     * or the arm will keep rotating until it physically cannot, which will probably break
+     * something.
      * @param targetPosition The position to rotate to
      * @param maxPower The maximum power to supply the rotation motor while moving to the target
      *                 position.
@@ -140,12 +135,13 @@ public final class ArmSubsystem extends SubsystemBase {
     }
 
     /**
-     * Rotates the arm to the target position. Mut be called continually or the arm will keep
-     * rotating until it physically cannot, which will probably break something.
+     * Rotates the arm to the target position at the power defined by DEFAULT_ROTATION_POWER.
+     * Must be called continually or the arm will keep rotating until it physically cannot,
+     * which will probably break something.
      * @param targetPosition The position to rotate to
      */
     private void rotate(int targetPosition) {
-        rotate(targetPosition, 1.0);
+        rotate(targetPosition, DEFAULT_ROTATION_POWER);
     }
 
     /**
@@ -315,6 +311,13 @@ public final class ArmSubsystem extends SubsystemBase {
     }
 
     /**
+     * Records information about the current draw of the arm
+     */
+    private void recordCurrentInformation() {
+
+    }
+
+    /**
      * Displays information about the current draw, in amps, of the motors. The information
      * displayed is as follows:
      * <ul>
@@ -325,23 +328,34 @@ public final class ArmSubsystem extends SubsystemBase {
      * </ul>
      */
     public void debugCurrent() {
-       double extensionCurrentAverage
-               = extensionMotorOne.getCurrent(AMPS) + extensionMotorTwo.getCurrent(AMPS);
-       double rotationCurrentAverage
-               = rotationMotor.getCurrent(AMPS);
+        if (!debugCurrent) {
+            debugCurrent = true;
+            return;
+        }
 
-       if (extensionCurrentAverage > maxExtensionCurrent) {
-           maxExtensionCurrent = extensionCurrentAverage;
-       }
+        double extensionMotorOneCurrentAmps = extensionMotorOne.getCurrent(AMPS);
+        double extensionMotorTwoCurrentAmps = extensionMotorTwo.getCurrent(AMPS);
+        double extensionCurrentAmps =
+                extensionMotorOneCurrentAmps + extensionMotorTwoCurrentAmps;
 
-       if (rotationCurrentAverage > maxRotationCurrent) {
-           maxRotationCurrent = rotationCurrentAverage;
-       }
-
-       telemetry.addData("Max Rotation Current", maxRotationCurrent);
-       telemetry.addData("Max Extension Current", maxExtensionCurrent);
-       telemetry.addData("Rotation Current", rotationCurrentAverage);
-       telemetry.addData("Extension Current", extensionCurrentAverage);
+        telemetry.addLine("All Current Measurements Are In Amps");
+        telemetry.addData("Extension Motor One Current", extensionMotorOneCurrentAmps);
+        telemetry.addData("Extension Motor One Peak Current", extensionMotorTwoCurrentAmps);
+        telemetry.addLine();
+        telemetry.addData(
+                "Extension Motor One Average Current", averageExtensionMotorOneCurrentAmps);
+        telemetry.addData("Extension Motor Two Current", extensionMotorTwo.getCurrent(AMPS));
+        telemetry.addData("Extension Motor Two Peak Current", peakExtensionMotorTwoCurrentAmps);
+        telemetry.addLine();
+        telemetry.addData(
+                "Extension Motor Two Average Current", averageExtensionMotorTwoCurrentAmps);
+        telemetry.addData("Extension Current", extensionCurrentAmps);
+        telemetry.addData("Peak Extension Current", peakExtensionCurrentAmps);
+        telemetry.addData("Average Extension Current", averageExtensionCurrentAmps);
+        telemetry.addLine();
+        telemetry.addData("Rotation Motor Current ", rotationMotor.getCurrent(AMPS));
+        telemetry.addData("Peak Rotation Motor Current", peakRotationMotorCurrentAmps);
+        telemetry.addData("Average Rotation Motor Current", averageRotationMotorCurrentAmps);
     }
 
     /**

@@ -22,8 +22,11 @@ public final class Constants {
     }
 
     public static class ArmConstants {
-        public static int EXTENSION_LIMIT = 0;
-        public static int ROTATION_HOME_POSITION = 0;
+        public static int EXTENSION_LIMIT        = 0; //TODO measure this value
+        public static int ROTATION_HOME_POSITION = 0; //TODO measure this value
+
+        public static double DEFAULT_ROTATION_POWER  = 0.6;
+        public static double DEFAULT_EXTENSION_POWER = 0.6;
     }
 
     public static class DrivebaseConstants {
