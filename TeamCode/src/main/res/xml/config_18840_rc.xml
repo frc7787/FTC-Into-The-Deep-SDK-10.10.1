@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Robot type="FirstInspiresFTC">
+    <LynxUSBDevice name="Control Hub Portal" serialNumber="(embedded)" parentModuleAddress="173">
+        <LynxModule name="Control Hub" port="173">
+            <LynxEmbeddedIMU name="imu" port="0" bus="0"/>
+        </LynxModule>
+    </LynxUSBDevice>
+</Robot>
