@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.vision.color;
 
-import static org.firstinspires.ftc.teamcode.constants.Constants.VisionConstants.*;
+import static org.firstinspires.ftc.teamcode.Constants.VisionConstants.*;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;

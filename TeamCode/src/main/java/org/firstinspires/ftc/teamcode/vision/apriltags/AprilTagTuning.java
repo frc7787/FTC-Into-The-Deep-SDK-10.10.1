@@ -13,7 +13,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.*;
 import org.firstinspires.ftc.teamcode.utility.DataLogger;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.*;
-import static org.firstinspires.ftc.teamcode.constants.Constants.AprilTagConstants.*;
+import static org.firstinspires.ftc.teamcode.Constants.AprilTagConstants.*;
 import static org.firstinspires.ftc.teamcode.utility.playstationcontroller.PlayStationController.*;
 
 import java.util.*;

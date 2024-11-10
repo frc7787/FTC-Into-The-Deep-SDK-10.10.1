@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.utility.MotorUtility;
 import org.firstinspires.ftc.teamcode.utility.PIDController;
 
 import static org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit.AMPS;
-import static org.firstinspires.ftc.teamcode.constants.Constants.ArmConstants.*;
+import static org.firstinspires.ftc.teamcode.Constants.ArmConstants.*;
 
 public final class ArmSubsystem extends SubsystemBase {
     private final double POSITIVE_EXTENSION_LIMIT_TICKS = 3000;
