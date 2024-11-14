@@ -1,14 +1,14 @@
 package org.firstinspires.ftc.teamcode.opmodes.test;
 import com.qualcomm.robotcore.eventloop.opmode.*;
-import org.firstinspires.ftc.teamcode.subsystems.arm.ArmSubsystem;;
+import org.firstinspires.ftc.teamcode.subsystems.arm.Arm;;
 
 @TeleOp(name = "Test - Arm Subsystem", group = "Test")
 @Disabled
 public final class MotorTest extends OpMode {
-    private ArmSubsystem armSubsystem;
+    private Arm armSubsystem;
 
     @Override public void init() {
-        armSubsystem = new ArmSubsystem(this);
+        armSubsystem = new Arm(this);
     }
 
     @Override public void loop() {}

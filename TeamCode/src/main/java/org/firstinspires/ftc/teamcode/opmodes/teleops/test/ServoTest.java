@@ -24,7 +24,7 @@ public final class ServoTest extends OpMode {
         previousGamepad.copy(currentGamepad);
         currentGamepad.copy(gamepad1);
 
-        telemetry.addLine("Press Options (The One On The Left) To Display Controls.");
+        telemetry.addLine("Press Options (The One On The Right) To Display Controls.");
         if (gamepad1.options) displayInstructions();
         telemetry.addData("Start Position", servoPosition);
 
@@ -37,7 +37,7 @@ public final class ServoTest extends OpMode {
         previousGamepad.copy(currentGamepad);
         currentGamepad.copy(gamepad1);
 
-        telemetry.addLine("Press Options (The One On The Left) To Display Controls.");
+        telemetry.addLine("Press Options (The One On The Right) To Display Controls.");
 
         if (gamepad1.options) {
             displayInstructions();

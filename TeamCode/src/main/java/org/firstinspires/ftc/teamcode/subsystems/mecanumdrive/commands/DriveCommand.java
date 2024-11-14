@@ -45,6 +45,6 @@ public final class DriveCommand extends CommandBase {
             if (Math.abs(turnValue) <= 0.05) turnValue = 0.0;
             if (Math.abs(strafeValue) <= 0.05) strafeValue = 0.0;
 
-            mecanumDriveSubsystem.setDrivePowers(driveValue, strafeValue, turnValue);
+            mecanumDriveSubsystem.drive(driveValue, strafeValue, turnValue);
         }
 }

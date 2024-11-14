@@ -5,8 +5,6 @@ import static org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.I
 
 import android.annotation.SuppressLint;
 
-import com.acmerobotics.roadrunner.ftc.GoBildaPinpointDriver.EncoderDirection;
-
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.opencv.core.Core;
@@ -22,11 +20,17 @@ public final class Constants {
     }
 
     public static class ArmConstants {
-        public static int EXTENSION_LIMIT        = 0; //TODO measure this value
         public static int ROTATION_HOME_POSITION = 0; //TODO measure this value
 
-        public static double DEFAULT_ROTATION_POWER  = 0.6;
-        public static double DEFAULT_EXTENSION_POWER = 0.6;
+        public static double DEFAULT_ROTATION_MAX_POWER = 0.6;
+        public static double DEFAULT_EXTENSION_MAX_POWER = 0.6;
+
+        public static int TICKS_PER_INCH        = 60;
+        public static double MAX_FORWARD_INCHES = 21;
+        public static double MAX_REVERSE_INCHES = 7;
+
+        public static double FORWARD_EXTENSION_LIMIT_TICKS = TICKS_PER_INCH * MAX_FORWARD_INCHES;
+        public static double REVERSE_EXTENSION_LIMIT_TICKS = TICKS_PER_INCH * MAX_REVERSE_INCHES;
     }
 
     public static class DrivebaseConstants {
@@ -37,8 +41,6 @@ public final class Constants {
         public static String ODOMETRY_NAME                = "pinpoint";
         public static double ODOMETRY_X_OFFSET_MM = 0;
         public static double ODOMETRY_Y_OFFSET_MM = 0;
-        public static EncoderDirection X_ENCODER_DIRECTION = EncoderDirection.FORWARD;
-        public static EncoderDirection Y_ENCODER_DIRECtiON = EncoderDirection.FORWARD;
     }
 
     public static class TestConstants {
