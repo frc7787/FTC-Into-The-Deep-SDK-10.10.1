@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import com.qualcomm.hardware.rev.RevTouchSensor;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.*;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.utility.MotorUtility;
@@ -17,6 +18,11 @@ import static org.firstinspires.ftc.teamcode.Constants.ArmConstants.*;
 import java.util.ArrayList;
 
 public final class Arm {
+
+    private enum ArmState {
+        TO_POS,
+        AT_POS
+    }
 
     // ---------------------------------------------------------------------------------------------
     // Global Variables
@@ -37,6 +43,8 @@ public final class Arm {
                    maxRotationPower;
 
     // ---------- Global State ---------- //
+
+    private ArmState armState;
 
     private boolean frontRotationLimitSwitchWasPressed,
                     backRotationLimitSwitchWasPressed;
@@ -109,6 +117,8 @@ public final class Arm {
 
         frontRotationLimitSwitchWasPressed = false;
         backRotationLimitSwitchWasPressed  = false;
+
+        armState = ArmState.AT_POS;
     }
 
     /**
@@ -147,30 +157,34 @@ public final class Arm {
         backRotationLimitSwitchWasPressed  = false;
     }
 
+    // ---------------------------------------------------------------------------------------------
+    // Core
+    // ---------------------------------------------------------------------------------------------
+
     /**
      * Method to update the state of the arm. This function should be called once every iteration
      * of the loop
      */
     public void update() {
-        if (debugCurrent) recordCurrentInformation();
+        switch (armState) {
+            case AT_POS:
+                extensionMotorOne.setPower(0);
+                extensionMotorTwo.setPower(0);
+                rotationMotor.setPower(0);
+                break;
+            case TO_POS:
+                rotate(rotationTargetPosition);
+                extend(extensionTargetPosition);
 
-        boolean frontRotationLimitSwitchIsPressed = frontRotationLimitSwitch.isPressed();
-        boolean backRotationLimitSwitchIsPressed  = backRotationLimitSwitch.isPressed();
+                if (!rotationMotor.isBusy() && !extensionMotorOne.isBusy()) {
+                    armState = ArmState.AT_POS;
+                }
 
-        if (frontRotationLimitSwitchIsPressed && !frontRotationLimitSwitchWasPressed) {
-            // Reset the rotation motor when the front limit switch is pressed
-            MotorUtility.reset(rotationMotor);
-        } else if (backRotationLimitSwitchIsPressed && !backRotationLimitSwitchWasPressed) {
-            // Stop the rotation motor when the back limit switch is pressed
-            rotationMotor.setPower(0.0);
-        } else {
-            // Send the arm to their target positions
-            extend(extensionTargetPosition, maxExtensionPower);
-            rotate(rotationTargetPosition, maxRotationPower);
+                break;
         }
 
-        frontRotationLimitSwitchWasPressed = frontRotationLimitSwitchIsPressed;
-        backRotationLimitSwitchWasPressed  = backRotationLimitSwitchIsPressed;
+        frontRotationLimitSwitchWasPressed = frontRotationLimitSwitch.isPressed();
+        backRotationLimitSwitchWasPressed  = backRotationLimitSwitch.isPressed();
     }
 
 
@@ -185,8 +199,27 @@ public final class Arm {
             int rotationTargetPosition,
             int extensionTargetPosition
     ) {
-        this.rotationTargetPosition  = rotationTargetPosition;
+        this.rotationTargetPosition  = Range.clip(rotationTargetPosition, 0, 9500);
         this.extensionTargetPosition = extensionTargetPosition;
+        armState = ArmState.TO_POS;
+    }
+
+    /**
+     * Sets the extension target position of the arm
+     * @param extensionTargetPosition The target position of the extension motor
+     */
+    public void setExtensionTargetPosition(int extensionTargetPosition) {
+        this.extensionTargetPosition = extensionTargetPosition;
+        armState = ArmState.TO_POS;
+    }
+
+    /**
+     * Sets the rotation target position of the arm
+     * @param rotationTargetPosition The target position of the rotation motor
+     */
+    public void setRotationTargetPosition(int rotationTargetPosition) {
+        this.rotationTargetPosition = Range.clip(rotationTargetPosition, 0, 9500);
+        armState = ArmState.TO_POS;
     }
 
     /**
@@ -199,7 +232,7 @@ public final class Arm {
             double rotationMaxPower,
             double extensionMaxPower
     ) {
-        this.maxRotationPower = rotationMaxPower;
+        this.maxRotationPower  = rotationMaxPower;
         this.maxExtensionPower = extensionMaxPower;
     }
 
@@ -271,15 +304,33 @@ public final class Arm {
     /**
      * @return The current position of the leading extension motor
      */
-    public int extensionCurrentPosition() {
+    public int extensionPosition() {
         return extensionMotorOne.getCurrentPosition();
     }
 
     /**
      * @return The current position of the rotation motor
      */
-    public int rotationCurrentPosition() {
+    public int rotationPosition() {
         return rotationMotor.getCurrentPosition();
+    }
+
+    /**
+     * @return The target position of the leading extension motor
+     */
+    public int extensionTargetPosition() {
+        return extensionMotorOne.getTargetPosition();
+    }
+
+    public int rotationTargetPosition() {
+        return rotationMotor.getTargetPosition();
+    }
+
+    /**
+     * @return Whether either rotation limit switch is pressed
+     */
+    public boolean rotationLimitSwitchIsPressed() {
+        return frontRotationLimitSwitch.isPressed() || backRotationLimitSwitch.isPressed();
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -325,6 +376,7 @@ public final class Arm {
                 "Back Rotation Limit Switch Pressed", backRotationLimitSwitch.isPressed());
         telemetry.addData(
                 "Back Rotation Limit Switch Was Pressed", backRotationLimitSwitchWasPressed);
+        telemetry.addData("Arm State", armState);
     }
 
     /**
