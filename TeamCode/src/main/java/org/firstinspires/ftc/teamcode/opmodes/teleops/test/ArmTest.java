@@ -22,29 +22,13 @@ public final class ArmTest extends OpMode {
 
         arm.update();
 
-        if (currentGamepad.dpad_up && !previousGamepad.dpad_up) {
-            arm.setTargetPosition(0, 500);
-        } else if (currentGamepad.dpad_left && !previousGamepad.dpad_left) {
-            arm.setTargetPosition(3000, 0);
-        } else if (currentGamepad.dpad_right && !previousGamepad.dpad_right) {
-            arm.setTargetPosition(-3000, 0);
-        } else {
-            double leftStickY  = -gamepad2.left_stick_y;
-            double rightStickY = -gamepad2.right_stick_y;
-
-            if (Math.abs(leftStickY) > 0.05) {
-                int rotationTargetPosition = arm.rotationTargetPosition();
-                rotationTargetPosition += (int) (leftStickY * 100);
-                arm.setRotationTargetPosition(rotationTargetPosition);
-            }
-
-            if (Math.abs(rightStickY) > 0.05) {
-                int extensionTargetPosition = arm.extensionTargetPosition();
-                extensionTargetPosition += (int) (rightStickY * 30);
-                arm.setExtensionTargetPosition(extensionTargetPosition);
-            }
+        if (gamepad1.left_bumper) {
+            arm.setTargetPosition(0, 600);
+        } else if (gamepad1.right_bumper) {
+            arm.setTargetPosition(0,0);
         }
 
-        arm.debugAll();
+        arm.debugGlobal();
+        arm.debugExtension();
     }
 }

@@ -4,6 +4,7 @@ import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.*;
 
 import androidx.annotation.NonNull;
 
+import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.hardware.rev.RevTouchSensor;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.*;
@@ -21,7 +22,14 @@ public final class Arm {
 
     private enum ArmState {
         TO_POS,
-        AT_POS
+        AT_POS,
+        HOMING
+    }
+
+    private enum HomingState {
+        START,
+        HOMING_ROTATION,
+        HOMING_EXTENSION
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -31,7 +39,8 @@ public final class Arm {
     // ---------- Hardware ---------- //
 
     private final RevTouchSensor frontRotationLimitSwitch,
-                                 backRotationLimitSwitch;
+                                 backRotationLimitSwitch,
+                                 extensionLimitSwitch;
 
     private final DcMotorImplEx rotationMotor,
                                 extensionMotorOne,
@@ -46,11 +55,14 @@ public final class Arm {
 
     private ArmState armState;
 
-    private boolean frontRotationLimitSwitchWasPressed,
-                    backRotationLimitSwitchWasPressed;
+    private HomingState homingState;
 
     private int extensionTargetPosition,
                 rotationTargetPosition;
+
+    private double extensionDisplacementInches, rotationAngleDegrees, extensionInches;
+
+    private int maxRotationPosition = 9500;
 
     // ---------- Debug ---------- //
 
@@ -59,10 +71,10 @@ public final class Arm {
     private boolean debugCurrent;
 
     private ArrayList<Double> armCurrents,
-                                    rotationCurrents,
-                                    extensionCurrents,
-                                    extensionMotorOneCurrents,
-                                    extensionMotorTwoCurrents;
+                              rotationCurrents,
+                              extensionCurrents,
+                              extensionMotorOneCurrents,
+                              extensionMotorTwoCurrents;
 
     private double armCurrent,
                    rotationCurrent,
@@ -77,9 +89,9 @@ public final class Arm {
                    averageExtensionMotorTwoCurrent;
 
     private double peakArmCurrent,
-            peakRotationCurrent,
-            peakExtensionCurrent,
-            peakExtensionMotorOneCurrent,
+                   peakRotationCurrent,
+                   peakExtensionCurrent,
+                   peakExtensionMotorOneCurrent,
                    peakExtensionMotorTwoCurrent;
 
     // ---------------------------------------------------------------------------------------------
@@ -104,21 +116,21 @@ public final class Arm {
                 = opMode.hardwareMap.get(RevTouchSensor.class, "forwardRotationLimitSwitch");
         this.backRotationLimitSwitch
                 = opMode.hardwareMap.get(RevTouchSensor.class, "reverseRotationLimitSwitch");
+        this.extensionLimitSwitch
+                = opMode.hardwareMap.get(RevTouchSensor.class, "extensionLimitSwitch");
 
         MotorUtility.reset(extensionMotorOne, extensionMotorTwo, rotationMotor);
 
         extensionTargetPosition = 0;
         rotationTargetPosition  = 0;
 
-        maxExtensionPower = DEFAULT_EXTENSION_MAX_POWER;
-        maxRotationPower  = DEFAULT_ROTATION_MAX_POWER;
+        maxExtensionPower = 0.8;
+        maxRotationPower  = 0.8;
 
         initializeCurrentInformation();
 
-        frontRotationLimitSwitchWasPressed = false;
-        backRotationLimitSwitchWasPressed  = false;
-
-        armState = ArmState.AT_POS;
+        armState    = ArmState.HOMING;
+        homingState = HomingState.START;
     }
 
     /**
@@ -142,6 +154,8 @@ public final class Arm {
                 = opMode.hardwareMap.get(RevTouchSensor.class, "forwardRotationLimitSwitch");
         this.backRotationLimitSwitch
                 = opMode.hardwareMap.get(RevTouchSensor.class, "reverseRotationLimitSwitch");
+        this.extensionLimitSwitch
+                = opMode.hardwareMap.get(RevTouchSensor.class, "extensionLimitSwitch");
 
         MotorUtility.reset(extensionMotorOne, extensionMotorTwo, rotationMotor);
 
@@ -153,8 +167,8 @@ public final class Arm {
 
         initializeCurrentInformation();
 
-        frontRotationLimitSwitchWasPressed = false;
-        backRotationLimitSwitchWasPressed  = false;
+        armState    = ArmState.HOMING;
+        homingState = HomingState.START;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -167,26 +181,102 @@ public final class Arm {
      */
     public void update() {
         switch (armState) {
+            case HOMING:
+                home();
+                break;
             case AT_POS:
                 extensionMotorOne.setPower(0);
                 extensionMotorTwo.setPower(0);
                 rotationMotor.setPower(0);
                 break;
             case TO_POS:
-                rotate(rotationTargetPosition);
-                extend(extensionTargetPosition);
+                rotationTargetPosition = Range.clip(rotationTargetPosition, 0, maxRotationPosition);
 
-                if (!rotationMotor.isBusy() && !extensionMotorOne.isBusy()) {
+                int rotationPosition  = rotationMotor.getCurrentPosition();
+                int extensionPosition = extensionMotorOne.getCurrentPosition();
+
+                if (backRotationLimitSwitch.isPressed()) {
+                    if (rotationTargetPosition >= rotationPosition) {
+                        rotate(rotationTargetPosition);
+                    } else {
+                        MotorUtility.reset(rotationMotor);
+                    }
+                } else if (frontRotationLimitSwitch.isPressed()) {
+                    maxRotationPosition = rotationPosition;
+
+                    if (rotationTargetPosition < rotationPosition) {
+                        rotate(rotationTargetPosition);
+                    } else {
+                        rotationMotor.setPower(0.0);
+                    }
+                } else {
+                    rotate(rotationTargetPosition);
+                }
+
+                rotationAngleDegrees = rotationTicksToDegrees(rotationPosition);
+                extensionInches = (double) extensionPosition / TICKS_PER_INCH;
+
+                extensionDisplacementInches
+                        = Math.cos(Math.toRadians(rotationAngleDegrees)) * extensionInches;
+
+                if (rotationAngleDegrees <= 90 && extensionDisplacementInches >= MAX_FORWARD_INCHES) {
+                    extensionTargetPosition = (int) (TICKS_PER_INCH * MAX_FORWARD_INCHES);
+                } else if (rotationAngleDegrees >= 90 && Math.abs(extensionDisplacementInches) >= MAX_REVERSE_INCHES) {
+                    extensionTargetPosition = (int) (TICKS_PER_INCH * MAX_REVERSE_INCHES);
+                }
+
+                if (extensionLimitSwitch.isPressed()) {
+                    if (extensionTargetPosition > extensionPosition) {
+                        extend(extensionTargetPosition);
+                    } else {
+                        MotorUtility.reset(extensionMotorOne, extensionMotorTwo);
+                    }
+                } else {
+                    extend(extensionTargetPosition);
+                }
+
+
+                if (!extensionMotorOne.isBusy() && !rotationMotor.isBusy()) {
                     armState = ArmState.AT_POS;
                 }
 
                 break;
         }
-
-        frontRotationLimitSwitchWasPressed = frontRotationLimitSwitch.isPressed();
-        backRotationLimitSwitchWasPressed  = backRotationLimitSwitch.isPressed();
     }
 
+    /**
+     * Runs the homing sequence of the robot. Due to looping nature of opmodes this function is
+     * non blocking and must be called continually while armState == HOMING.
+     */
+    private void home() {
+        switch (homingState) {
+            case START:
+                if (backRotationLimitSwitch.isPressed() && extensionLimitSwitch.isPressed()) {
+                    MotorUtility.reset(rotationMotor, extensionMotorOne, extensionMotorTwo);
+                    armState = ArmState.AT_POS;
+                }
+
+                homingState = HomingState.HOMING_ROTATION;
+                break;
+            case HOMING_ROTATION:
+                rotationMotor.setPower(-0.9);
+
+                if (backRotationLimitSwitch.isPressed()) {
+                    MotorUtility.reset(rotationMotor);
+                    homingState = HomingState.HOMING_EXTENSION;
+                }
+                break;
+            case HOMING_EXTENSION:
+                extensionMotorOne.setPower(-0.6);
+                extensionMotorTwo.setPower(-0.6);
+
+                if (extensionLimitSwitch.isPressed()) {
+                    MotorUtility.reset(extensionMotorOne, extensionMotorTwo);
+                    armState = ArmState.AT_POS;
+                }
+                break;
+        }
+    }
 
     /**
      * Sets the target position of the arm
@@ -199,7 +289,8 @@ public final class Arm {
             int rotationTargetPosition,
             int extensionTargetPosition
     ) {
-        this.rotationTargetPosition  = Range.clip(rotationTargetPosition, 0, 9500);
+        if (armState == ArmState.HOMING) return;
+        this.rotationTargetPosition  = rotationTargetPosition;
         this.extensionTargetPosition = extensionTargetPosition;
         armState = ArmState.TO_POS;
     }
@@ -209,6 +300,7 @@ public final class Arm {
      * @param extensionTargetPosition The target position of the extension motor
      */
     public void setExtensionTargetPosition(int extensionTargetPosition) {
+        if (armState == ArmState.HOMING) return;
         this.extensionTargetPosition = extensionTargetPosition;
         armState = ArmState.TO_POS;
     }
@@ -218,7 +310,8 @@ public final class Arm {
      * @param rotationTargetPosition The target position of the rotation motor
      */
     public void setRotationTargetPosition(int rotationTargetPosition) {
-        this.rotationTargetPosition = Range.clip(rotationTargetPosition, 0, 9500);
+        if (armState == ArmState.HOMING) return;
+        this.rotationTargetPosition = rotationTargetPosition;
         armState = ArmState.TO_POS;
     }
 
@@ -247,10 +340,8 @@ public final class Arm {
     private void extend(int targetPosition, double maxPower) {
         extensionMotorOne.setTargetPosition(targetPosition);
         extensionMotorOne.setMode(RUN_TO_POSITION);
-        extensionMotorOne.setPower(maxPower);
-        extensionMotorTwo.setTargetPosition(targetPosition);
-        extensionMotorTwo.setMode(RUN_TO_POSITION);
-        extensionMotorTwo.setPower(maxPower);
+        extensionMotorOne.setVelocity(2400);
+        extensionMotorTwo.setVelocity(extensionMotorOne.getVelocity());
     }
 
     /**
@@ -292,9 +383,8 @@ public final class Arm {
      * @param ticks The position of the rotation motor
      * @return The angle of the rotation motor in degrees
      */
-    private double rotationTicksToRadians(int ticks) {
-        double degrees = ((double) ticks) / 55;
-        return Math.toRadians(degrees);
+    private double rotationTicksToDegrees(int ticks) {
+        return ((double) ticks) / 55;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -323,7 +413,7 @@ public final class Arm {
     }
 
     public int rotationTargetPosition() {
-        return rotationMotor.getTargetPosition();
+        return rotationTargetPosition;
     }
 
     /**
@@ -371,12 +461,14 @@ public final class Arm {
         telemetry.addData(
                 "Front Rotation Limit Switch Pressed", frontRotationLimitSwitch.isPressed());
         telemetry.addData(
-                "Front Rotation Limit Switch Was Pressed", frontRotationLimitSwitchWasPressed);
-        telemetry.addData(
                 "Back Rotation Limit Switch Pressed", backRotationLimitSwitch.isPressed());
         telemetry.addData(
-                "Back Rotation Limit Switch Was Pressed", backRotationLimitSwitchWasPressed);
+                "Extension Limit Switch Pressed", extensionLimitSwitch.isPressed());
         telemetry.addData("Arm State", armState);
+        telemetry.addData("Homing State", homingState);
+        telemetry.addData("Extension Displacement Inches", extensionDisplacementInches);
+        telemetry.addData("Extension Distance Inches", extensionInches);
+        telemetry.addData("Rotation Degrees", rotationAngleDegrees);
     }
 
     /**
@@ -419,6 +511,7 @@ public final class Arm {
         telemetry.addLine("----- Extension Motor One -----");
         telemetry.addData("Power", extensionMotorOne.getPower());
         telemetry.addData("Position", extensionMotorOne.getCurrentPosition());
+        telemetry.addData("Velocity", extensionMotorOne.getVelocity());
         telemetry.addData("Target Position (Subsystem)", extensionTargetPosition);
         telemetry.addData("Target Position (Motor)", extensionMotorOne.getTargetPosition());
         telemetry.addData("Current (AMPS)", extensionMotorOne.getCurrent(AMPS));
@@ -443,6 +536,7 @@ public final class Arm {
         telemetry.addLine("----- Extension Motor Two -----");
         telemetry.addData("Power", extensionMotorTwo.getPower());
         telemetry.addData("Position", extensionMotorTwo.getCurrentPosition());
+        telemetry.addData("Velocity", extensionMotorTwo.getVelocity());
         telemetry.addData("Target Position (Subsystem)", extensionTargetPosition);
         telemetry.addData("Target Position", extensionMotorTwo.getTargetPosition());
         telemetry.addData("Current (AMPS)", extensionMotorTwo.getCurrent(AMPS));
@@ -662,5 +756,12 @@ public final class Arm {
         }
     }
 
+    /**
+     * Displays information about the current position of the arm
+     */
+    public void debugPositionInformation() {
+        telemetry.addData("Rotation Position", rotationMotor.getCurrentPosition());
+        telemetry.addData("Extension Position", extensionMotorOne.getCurrentPosition());
+    }
 
 }

@@ -25,12 +25,9 @@ public final class Constants {
         public static double DEFAULT_ROTATION_MAX_POWER = 0.6;
         public static double DEFAULT_EXTENSION_MAX_POWER = 0.6;
 
-        public static int TICKS_PER_INCH        = 60;
-        public static double MAX_FORWARD_INCHES = 21;
-        public static double MAX_REVERSE_INCHES = 7;
-
-        public static double FORWARD_EXTENSION_LIMIT_TICKS = TICKS_PER_INCH * MAX_FORWARD_INCHES;
-        public static double REVERSE_EXTENSION_LIMIT_TICKS = TICKS_PER_INCH * MAX_REVERSE_INCHES;
+        public static double TICKS_PER_INCH     = 50;
+        public static double MAX_FORWARD_INCHES = 14;
+        public static double MAX_REVERSE_INCHES = 1;
     }
 
     public static class DrivebaseConstants {

@@ -17,7 +17,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.utility.MotorUtility;
 import org.firstinspires.ftc.teamcode.utility.PIDController;
 
-public final class MecanumDriveSubsystem extends SubsystemBase {
+public final class MecanumDriveBase extends SubsystemBase {
     public enum DriveMode {
         ROBOT_CENTRIC,
         FIELD_CENTRIC
@@ -54,7 +54,7 @@ public final class MecanumDriveSubsystem extends SubsystemBase {
      * Constructs a new drive subsystems
      * @param opMode The opMode you are running ; To obtain the HardwareMap and Telemetry objects
      */
-    public MecanumDriveSubsystem(@NonNull OpMode opMode, @NonNull DriveMode driveMode) {
+    public MecanumDriveBase(@NonNull OpMode opMode, @NonNull DriveMode driveMode) {
         shouldHoldPosition = false;
         drive  = 0;
         strafe = 0;

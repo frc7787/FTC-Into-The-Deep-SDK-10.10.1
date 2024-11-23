@@ -7,38 +7,19 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorImplEx;
 
+import org.firstinspires.ftc.teamcode.subsystems.arm.Arm;
 import org.firstinspires.ftc.teamcode.utility.MotorUtility;
 
 @TeleOp(name = "Test - Velocity")
 public class VelocityTest extends OpMode {
-    private DcMotorImplEx extensionMotorOne, extensionMotorTwo;
-
-    private double maxTicksPerSecond;
+    private Arm arm;
 
     @Override public void init() {
-        extensionMotorOne = hardwareMap.get(DcMotorImplEx.class, "extensionMotorOne");
-        extensionMotorTwo = hardwareMap.get(DcMotorImplEx.class, "extensionMotorTwo");
-        maxTicksPerSecond = 0.0;
-
-        MotorUtility.setZeroPowerBehaviours(BRAKE, extensionMotorOne, extensionMotorTwo);
-        MotorUtility.setModes(RUN_WITHOUT_ENCODER, extensionMotorOne, extensionMotorTwo);
+        arm = new Arm(this);
     }
 
     @Override public void loop() {
-        double leftStickY = gamepad1.left_stick_y * -1.0;
-
-        extensionMotorOne.setPower(leftStickY);
-        extensionMotorTwo.setPower(leftStickY);
-
-        double ticksPerSecond = extensionMotorOne.getVelocity();
-
-        if (Math.abs(ticksPerSecond) > Math.abs(maxTicksPerSecond)) {
-            maxTicksPerSecond = ticksPerSecond;
-        }
-
-        telemetry.addData("Current Position", extensionMotorOne.getCurrentPosition());
-        telemetry.addData("Current Ticks Per Second", ticksPerSecond);
-        telemetry.addData("Max Ticks Per Second", maxTicksPerSecond);
-        telemetry.update();
+        arm.debugSetArmPower(gamepad1.left_stick_y, 0);
+        arm.debugExtension();
     }
 }

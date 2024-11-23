@@ -1,18 +1,16 @@
 package org.firstinspires.ftc.teamcode.subsystems.mecanumdrive.commands;
 
-import static org.firstinspires.ftc.teamcode.subsystems.mecanumdrive.ControlType.SQUARED;
-
 import androidx.annotation.NonNull;
 
 import com.arcrobotics.ftclib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.subsystems.mecanumdrive.ControlType;
-import org.firstinspires.ftc.teamcode.subsystems.mecanumdrive.MecanumDriveSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.mecanumdrive.MecanumDriveBase;
 import java.util.function.DoubleSupplier;
 
 public final class DriveCommand extends CommandBase {
         @NonNull
-        private final MecanumDriveSubsystem mecanumDriveSubsystem;
+        private final MecanumDriveBase mecanumDriveSubsystem;
 
         @NonNull
         private final DoubleSupplier driveSupplier, strafeSupplier, turnSupplier;
@@ -21,7 +19,7 @@ public final class DriveCommand extends CommandBase {
         private final ControlType controlType;
 
         public DriveCommand(
-                @NonNull MecanumDriveSubsystem mecanumDriveSubsystem,
+                @NonNull MecanumDriveBase mecanumDriveSubsystem,
                 @NonNull DoubleSupplier driveSupplier,
                 @NonNull DoubleSupplier strafeSupplier,
                 @NonNull DoubleSupplier turnSupplier,
