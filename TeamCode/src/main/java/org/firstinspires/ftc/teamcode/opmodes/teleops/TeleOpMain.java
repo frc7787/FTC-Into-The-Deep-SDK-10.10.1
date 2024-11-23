@@ -49,8 +49,10 @@ public class TeleOpMain extends OpMode {
         );
 
         if (gamepad2.left_bumper) {
-            clawServo.setPosition(0.01);
-        } else {
+            clawServo.setPosition(0.02);
+        }
+
+        if (gamepad2.right_bumper) {
             clawServo.setPosition(0.0);
         }
 
@@ -65,22 +67,22 @@ public class TeleOpMain extends OpMode {
         } else if (gamepad2.square) {
             arm.setTargetPosition(LOW_BUCKET_ROTATION, LOW_BUCKET_EXTENSION);
         } else {
-            double gamepad2LeftStickY  = gamepad2.left_stick_y;
-            double gamepad2RightStickY = gamepad2.right_stick_y;
+            double gamepad2LeftStickY  = gamepad2.right_stick_y * -1.0;
+            double gamepad2RightStickY = gamepad2.left_stick_y * -1.0;
 
             if (Math.abs(gamepad2LeftStickY) >= 0.05) {
                 int rotationTargetPosition = arm.rotationTargetPosition();
-                rotationTargetPosition += (int) (gamepad2LeftStickY * 20);
+                rotationTargetPosition += (int) (gamepad2LeftStickY * 100);
                 arm.setRotationTargetPosition(rotationTargetPosition);
             }
 
             if (Math.abs(gamepad2RightStickY) >= 0.05) {
                 int extensionTargetPosition = arm.extensionTargetPosition();;
-                extensionTargetPosition += (int) (gamepad2RightStickY * 20);
+                extensionTargetPosition += (int) (gamepad2RightStickY * 50);
                 arm.setExtensionTargetPosition(extensionTargetPosition);
             }
         }
 
-        arm.debugGlobal();
+        arm.debugAll();
     }
 }

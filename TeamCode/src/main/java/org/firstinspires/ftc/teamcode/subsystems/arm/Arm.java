@@ -219,10 +219,8 @@ public final class Arm {
                 extensionDisplacementInches
                         = Math.cos(Math.toRadians(rotationAngleDegrees)) * extensionInches;
 
-                if (rotationAngleDegrees <= 90 && extensionDisplacementInches >= MAX_FORWARD_INCHES) {
-                    extensionTargetPosition = (int) (TICKS_PER_INCH * MAX_FORWARD_INCHES);
-                } else if (rotationAngleDegrees >= 90 && Math.abs(extensionDisplacementInches) >= MAX_REVERSE_INCHES) {
-                    extensionTargetPosition = (int) (TICKS_PER_INCH * MAX_REVERSE_INCHES);
+                if (rotationAngleDegrees >= 85) {
+                    rotationTargetPosition = 90 * 54;
                 }
 
                 if (extensionLimitSwitch.isPressed()) {
@@ -232,6 +230,17 @@ public final class Arm {
                         MotorUtility.reset(extensionMotorOne, extensionMotorTwo);
                     }
                 } else {
+                    if (extensionDisplacementInches > 14 && extensionTargetPosition >= extensionPosition) {
+                        double cosAngle = Math.cos(Math.toRadians(rotationAngleDegrees));
+
+                        if (cosAngle == 0) {
+                            extensionTargetPosition = (int) (MAX_FORWARD_INCHES * TICKS_PER_INCH);
+                        } else {
+                            extensionTargetPosition = (int) ((int) (MAX_FORWARD_INCHES * TICKS_PER_INCH) / cosAngle);
+                        }
+
+                    }
+
                     extend(extensionTargetPosition);
                 }
 
@@ -340,9 +349,12 @@ public final class Arm {
     private void extend(int targetPosition, double maxPower) {
         extensionMotorOne.setTargetPosition(targetPosition);
         extensionMotorOne.setMode(RUN_TO_POSITION);
-        extensionMotorOne.setVelocity(2400);
-        extensionMotorTwo.setVelocity(extensionMotorOne.getVelocity());
+        extensionMotorOne.setPower(0.8);
+        extensionMotorTwo.setTargetPosition(targetPosition);
+        extensionMotorTwo.setMode(RUN_TO_POSITION);
+        extensionMotorTwo.setPower(0.8);
     }
+
 
     /**
      * Extends the arm to the target position at the power defined by DEFAULT_EXTENSION_POWER.
@@ -351,7 +363,7 @@ public final class Arm {
      * @param targetPosition The position to extend to
      */
     private void extend(int targetPosition) {
-        extend(targetPosition, DEFAULT_EXTENSION_MAX_POWER);
+        extend(targetPosition, 1.0);
     }
 
     /**
@@ -375,7 +387,7 @@ public final class Arm {
      * @param targetPosition The position to rotate to
      */
     private void rotate(int targetPosition) {
-        rotate(targetPosition, DEFAULT_ROTATION_MAX_POWER);
+        rotate(targetPosition, 1.0);
     }
 
     /**
