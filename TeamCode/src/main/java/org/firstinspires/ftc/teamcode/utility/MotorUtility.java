@@ -66,11 +66,8 @@ public final class MotorUtility {
     public static void reset(@NonNull DcMotor ... motors) {
         for (DcMotor motor : motors) {
             motor.setMode(STOP_AND_RESET_ENCODER);
-            motor.setMode(RUN_USING_ENCODER);
-            motor.setTargetPosition(0);
-            motor.setMode(RUN_TO_POSITION);
-            motor.setPower(0.0);
             motor.setMode(RUN_WITHOUT_ENCODER);
+            motor.setTargetPosition(0);
         }
     }
 }

@@ -1,10 +1,5 @@
 package org.firstinspires.ftc.teamcode.roadrunner;
 
-import static org.firstinspires.ftc.teamcode.Constants.DrivebaseConstants.BACK_LEFT_DRIVE_MOTOR_NAME;
-import static org.firstinspires.ftc.teamcode.Constants.DrivebaseConstants.BACK_RIGHT_DRIVE_MOTOR_NAME;
-import static org.firstinspires.ftc.teamcode.Constants.DrivebaseConstants.FRONT_LEFT_DRIVE_MOTOR_NAME;
-import static org.firstinspires.ftc.teamcode.Constants.DrivebaseConstants.FRONT_RIGHT_DRIVE_MOTOR_NAME;
-
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.canvas.Canvas;
@@ -221,10 +216,10 @@ public class MecanumDrive {
 
         // TODO: make sure your config has motors with these names (or change them)
         //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
-        leftFront = hardwareMap.get(DcMotorEx.class, FRONT_LEFT_DRIVE_MOTOR_NAME);
-        leftBack = hardwareMap.get(DcMotorEx.class, BACK_LEFT_DRIVE_MOTOR_NAME);
-        rightBack = hardwareMap.get(DcMotorEx.class, BACK_RIGHT_DRIVE_MOTOR_NAME);
-        rightFront = hardwareMap.get(DcMotorEx.class, FRONT_RIGHT_DRIVE_MOTOR_NAME);
+        leftFront = hardwareMap.get(DcMotorEx.class, "fldm");
+        leftBack = hardwareMap.get(DcMotorEx.class, "bldm");
+        rightBack = hardwareMap.get(DcMotorEx.class, "brdm");
+        rightFront = hardwareMap.get(DcMotorEx.class, "frdm");
 
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

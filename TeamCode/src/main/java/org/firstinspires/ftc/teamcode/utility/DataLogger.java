@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.utility;
 
-import static org.firstinspires.ftc.teamcode.Constants.FileConstants.*;
+import static org.firstinspires.ftc.teamcode.constants.Constants.FileConstants.*;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -33,7 +33,7 @@ public final class DataLogger {
 
         logFileName += currentDate + "_" + currentTime + ".txt";
 
-        String pathToLogFile = SD_CARD_PATH + logFileName;
+        String pathToLogFile = ON_BOT_JAVA_PATH + logFileName;
 
         try (FileWriter fileWriter = new FileWriter(pathToLogFile)) {
             for (String data : data) { fileWriter.write(data); }
