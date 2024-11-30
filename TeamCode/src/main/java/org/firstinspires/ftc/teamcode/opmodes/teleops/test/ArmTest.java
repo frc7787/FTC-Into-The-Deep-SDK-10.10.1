@@ -48,42 +48,13 @@ public class ArmTest extends OpMode {
         }
 
         if (gamepad2.dpad_up) {
-            arm.setTargetPosition(10, 90);
+            arm.setTargetPosition(0, 90);
         } else if (gamepad2.dpad_left) {
-            arm.setTargetPosition(20, 90);
+            arm.setTargetPosition(40, 90);
         } else if (gamepad2.dpad_down) {
-            arm.setTargetPosition(0,0);
+            arm.setTargetPosition(0, 0);
         }
 
-        if (gamepad1.dpad_down) {
-            arm.setTargetPosition(HOME_EXTENSION_INCHES, HOME_ROTATION_DEGREES);
-        } else if (gamepad1.dpad_left) {
-//            if ((arm.rotationTargetDegrees() == LOW_BAR_ROTATION_DEGREES
-//                    && arm.extensionTargetInches() == LOW_BAR_EXTENSION_INCHES)
-//                    || (arm.rotationTargetDegrees() == HIGH_BAR_ROTATION_DEGREES
-//                        && arm.extensionTargetInches() == HIGH_BAR_EXTENSION_INCHES)
-//            ) {
-//                arm.hookOnBar(WALL_EXTENSION_INCHES, WALL_ROTATION_DEGREES);
-//            }
-        } else if (gamepad1.dpad_right) {
-//            if ((arm.rotationTargetDegrees() == LOW_BAR_ROTATION_DEGREES
-//                    && arm.extensionTargetInches() == LOW_BAR_EXTENSION_INCHES)
-//                    || (arm.rotationTargetDegrees() == HIGH_BAR_ROTATION_DEGREES
-//                        && arm.extensionTargetInches() == HIGH_BAR_EXTENSION_INCHES)
-//            ) {
-//                arm.hookOnBar(GROUND_ROTATION_DEGREES, GROUND_ROTATION_DEGREES);
-//            }
-        } else if (gamepad1.triangle) {
-            arm.setTargetPosition(HIGH_BAR_EXTENSION_INCHES, HIGH_BAR_ROTATION_DEGREES);
-        } else if (gamepad1.square) {
-            arm.setTargetPosition(LOW_BAR_EXTENSION_INCHES, LOW_BAR_ROTATION_DEGREES);
-        } else if (gamepad1.circle) {
-            arm.setTargetPosition(HIGH_BASKET_EXTENSION_INCHES, HIGH_BASKET_ROTATION_DEGREES);
-        } else if (gamepad1.cross) {
-            arm.setTargetPosition(LOW_BASKET_EXTENSION_INCHES, LOW_BASKET_ROTATION_DEGREES);
-        } else {
-            // TODO Implement manual control
-        }
         arm.update();
         arm.debugGlobal();
         arm.debugPosition();
