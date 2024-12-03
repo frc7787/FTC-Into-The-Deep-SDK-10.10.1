@@ -15,10 +15,6 @@ public class ArmMeasurement extends OpMode {
 
     @Override public void loop() {
         arm.debugPosition();
-        arm.debugSetPowers(
-                gamepad1.left_stick_y * -1.0,
-                gamepad1.right_stick_y * -1.0
-        );
     }
 
 }

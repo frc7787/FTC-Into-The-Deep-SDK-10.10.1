@@ -14,10 +14,13 @@ public class Constants {
                 = ON_BOT_JAVA_PATH + "Constants/";
     }
 
-    @LoadStaticFields
     public static class TestConstants {
         public static int TEST_INT       = 0;
         public static double TEST_DOUBLE = 0.0;
         public static String TEST_STRING = "Hello, World";
+    }
+
+    public static class RobotConstants {
+        public static double ROBOT_CHASSIS_LENGTH_INCHES = 14.2;
     }
 }

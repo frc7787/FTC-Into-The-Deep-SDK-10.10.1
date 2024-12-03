@@ -48,11 +48,21 @@ public class ArmTest extends OpMode {
         }
 
         if (gamepad2.dpad_up) {
-            arm.setTargetPosition(0, 90);
+            arm.setTargetPosition(25, 90);
+        } else if (gamepad2.dpad_right) {
+            arm.setTargetPosition(0, 60);
         } else if (gamepad2.dpad_left) {
-            arm.setTargetPosition(40, 90);
+            arm.setTargetPosition(0, 30);
         } else if (gamepad2.dpad_down) {
-            arm.setTargetPosition(0, 0);
+            arm.setTargetPosition(0,0);
+        } else if (gamepad2.cross) {
+            arm.setTargetPosition(10, 0);
+        } else if (gamepad2.square) {
+            arm.setTargetPosition(15, 30);
+        } else if (gamepad2.circle) {
+            arm.setTargetPosition(20, 60);
+        } else if (gamepad2.triangle) {
+            arm.setTargetPosition(25, 0);
         }
 
         arm.update();

@@ -84,8 +84,8 @@ public class TeleOpMain extends OpMode {
         // Arm
         // --------------------
 
-        double extensionTargetInches = arm.extensionTargetInches();
-        double rotationTargetDegrees = arm.rotationTargetAngle();
+        double extensionTargetInches = arm.targetExtensionInches();
+        double rotationTargetDegrees = arm.targetAngleDegrees();
 
         if (gamepad2.dpad_down) {
             extensionTargetInches = GROUND_EXTENSION_INCHES;
