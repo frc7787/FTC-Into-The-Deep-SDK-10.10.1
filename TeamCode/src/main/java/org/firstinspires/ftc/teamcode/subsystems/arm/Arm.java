@@ -327,6 +327,16 @@ public class Arm {
         telemetry.addData("At Position", rotationAtPosition());
     }
 
+    public void debugCurrent() {
+        double extensionCurrent = leaderExtensionMotor.getCurrent(CurrentUnit.AMPS)
+                                + followerExtensionMotor.getCurrent(CurrentUnit.AMPS);
+        double rotationCurrent  = rotationMotor.getCurrent(CurrentUnit.AMPS);
+
+        telemetry.addData("Extension (AMPS)", extensionCurrent);
+        telemetry.addData("Rotation (AMPS)", rotationCurrent);
+        telemetry.addData("Total (AMPS)", extensionCurrent + rotationCurrent);
+    }
+
     // ---------------------------------------------------------------------------------------------
     // State Enums
     // ---------------------------------------------------------------------------------------------
