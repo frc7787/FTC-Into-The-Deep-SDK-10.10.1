@@ -32,10 +32,10 @@ public final class TwoDeadWheelLocalizer implements Localizer {
 
     public static Params PARAMS = new Params();
 
-    public final Encoder par, perp;
+    public final Encoder parallelDeadwheel, perpendicularDeadwheel;
     public final IMU imu;
 
-    private double lastParPos, lastPerpPos;
+    private int lastParPos, lastPerpPos;
     private Rotation2d lastHeading;
 
     private final double inPerTick;
@@ -44,25 +44,23 @@ public final class TwoDeadWheelLocalizer implements Localizer {
     private boolean initialized;
 
     public TwoDeadWheelLocalizer(HardwareMap hardwareMap, IMU imu, double inPerTick) {
-        // TODO: make sure your config has **motors** with these names (or change them)
-        //   the encoders should be plugged into the slot matching the named motor
-        //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
-        par = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "par")));
-        perp = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "perp")));
+        parallelDeadwheel
+                = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "parallelDeadwheel")));
+        perpendicularDeadwheel
+                = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "perpendicularDeadwheel")));
 
-        // TODO: reverse encoder directions if needed
-        //   par.setDirection(DcMotorSimple.Direction.REVERSE);
+        parallelDeadwheel.setDirection(DcMotorSimple.Direction.REVERSE);
+        perpendicularDeadwheel.setDirection(DcMotorSimple.Direction.REVERSE);
 
         this.imu = imu;
-
         this.inPerTick = inPerTick;
 
         FlightRecorder.write("TWO_DEAD_WHEEL_PARAMS", PARAMS);
     }
 
     public Twist2dDual<Time> update() {
-        PositionVelocityPair parPosVel = par.getPositionAndVelocity();
-        PositionVelocityPair perpPosVel = perp.getPositionAndVelocity();
+        PositionVelocityPair parPosVel = parallelDeadwheel.getPositionAndVelocity();
+        PositionVelocityPair perpPosVel = perpendicularDeadwheel.getPositionAndVelocity();
 
         YawPitchRollAngles angles = imu.getRobotYawPitchRollAngles();
         // Use degrees here to work around https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/1070
@@ -90,8 +88,8 @@ public final class TwoDeadWheelLocalizer implements Localizer {
         if (!initialized) {
             initialized = true;
 
-            lastParPos = parPosVel.position;
-            lastPerpPos = perpPosVel.position;
+            lastParPos  = (int) parPosVel.position;
+            lastPerpPos = (int) perpPosVel.position;
             lastHeading = heading;
 
             return new Twist2dDual<>(
@@ -100,8 +98,8 @@ public final class TwoDeadWheelLocalizer implements Localizer {
             );
         }
 
-        double parPosDelta = parPosVel.position - lastParPos;
-        double perpPosDelta = perpPosVel.position - lastPerpPos;
+        int parPosDelta = (int) parPosVel.position - lastParPos;
+        int perpPosDelta = (int) perpPosVel.position - lastPerpPos;
         double headingDelta = heading.minus(lastHeading);
 
         Twist2dDual<Time> twist = new Twist2dDual<>(
@@ -121,8 +119,8 @@ public final class TwoDeadWheelLocalizer implements Localizer {
                 })
         );
 
-        lastParPos = parPosVel.position;
-        lastPerpPos = perpPosVel.position;
+        lastParPos  = (int) parPosVel.position;
+        lastPerpPos = (int) perpPosVel.position;
         lastHeading = heading;
 
         return twist;

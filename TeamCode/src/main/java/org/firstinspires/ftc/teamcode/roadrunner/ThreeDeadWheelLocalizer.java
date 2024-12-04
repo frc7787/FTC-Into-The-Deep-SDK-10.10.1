@@ -12,7 +12,6 @@ import com.acmerobotics.roadrunner.ftc.OverflowEncoder;
 import com.acmerobotics.roadrunner.ftc.PositionVelocityPair;
 import com.acmerobotics.roadrunner.ftc.RawEncoder;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.roadrunner.messages.ThreeDeadWheelInputsMessage;
@@ -31,7 +30,7 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
 
     public final double inPerTick;
 
-    private double lastPar0Pos, lastPar1Pos, lastPerpPos;
+    private int lastPar0Pos, lastPar1Pos, lastPerpPos;
     private boolean initialized;
 
     public ThreeDeadWheelLocalizer(HardwareMap hardwareMap, double inPerTick) {
@@ -60,9 +59,9 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
         if (!initialized) {
             initialized = true;
 
-            lastPar0Pos = par0PosVel.position;
-            lastPar1Pos = par1PosVel.position;
-            lastPerpPos = perpPosVel.position;
+            lastPar0Pos = (int) par0PosVel.position;
+            lastPar1Pos = (int) par1PosVel.position;
+            lastPerpPos = (int) perpPosVel.position;
 
             return new Twist2dDual<>(
                     Vector2dDual.constant(new Vector2d(0.0, 0.0), 2),
@@ -70,9 +69,9 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
             );
         }
 
-        double par0PosDelta = par0PosVel.position - lastPar0Pos;
-        double par1PosDelta = par1PosVel.position - lastPar1Pos;
-        double perpPosDelta = perpPosVel.position - lastPerpPos;
+        int par0PosDelta = (int) (par0PosVel.position - lastPar0Pos);
+        int par1PosDelta = (int) (par1PosVel.position - lastPar1Pos);
+        int perpPosDelta = (int) (perpPosVel.position - lastPerpPos);
 
         Twist2dDual<Time> twist = new Twist2dDual<>(
                 new Vector2dDual<>(
@@ -91,9 +90,9 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
                 })
         );
 
-        lastPar0Pos = par0PosVel.position;
-        lastPar1Pos = par1PosVel.position;
-        lastPerpPos = perpPosVel.position;
+        lastPar0Pos = (int) par0PosVel.position;
+        lastPar1Pos = (int) par1PosVel.position;
+        lastPerpPos = (int) perpPosVel.position;
 
         return twist;
     }
