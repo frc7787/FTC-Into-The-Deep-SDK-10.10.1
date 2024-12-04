@@ -228,27 +228,14 @@ public class Arm {
         }
     }
 
-    public void setTargetPosition(double horizontalInches, double verticalInches) {
+    public void setTargetPosition(double extensionInches, double rotationDegrees) {
         if (armState == ArmState.HOMING) return;
 
-        if (horizontalInches >= FORWARD_EXTENSION_LIMIT_INCHES) {
-            horizontalInches = FORWARD_EXTENSION_LIMIT_INCHES;
-        }
+        extensionInches = Range.clip(extensionInches, MIN_EXTENSION_INCHES, MAX_EXTENSION_INCHES);
+        rotationDegrees = Range.clip(rotationDegrees, MIN_ROTATION_DEGREES, MAX_ROTATION_DEGREES);
 
-        verticalInches -= ROTATION_Y_OFFSET_INCHES;
-        horizontalInches -= ROTATION_X_OFFSET_INCHES;
-
-        double extensionTargetInches = Math.sqrt(
-                (verticalInches * verticalInches) + (horizontalInches * horizontalInches));
-        double rotationTargetDegrees = Math.asin(verticalInches / extensionTargetInches);
-
-        extensionTargetInches
-                = Range.clip(extensionTargetInches, MIN_EXTENSION_INCHES, MAX_EXTENSION_INCHES);
-        rotationTargetDegrees
-                = Range.clip(rotationTargetDegrees, MIN_ROTATION_DEGREES, MAX_ROTATION_DEGREES);
-
-        extensionTargetPosition = (int) ((extensionTargetInches * EXTENSION_TICKS_PER_INCH) + 0.5);
-        rotationTargetPosition  = (int) ((rotationTargetDegrees * ROTATION_TICKS_PER_DEGREE) + 0.5);
+        extensionTargetPosition = (int) ((extensionInches * EXTENSION_TICKS_PER_INCH) + 0.5);
+        rotationTargetPosition  = (int) ((rotationDegrees * ROTATION_TICKS_PER_DEGREE) + 0.5);
 
         armState = ArmState.TO_POS;
     }
