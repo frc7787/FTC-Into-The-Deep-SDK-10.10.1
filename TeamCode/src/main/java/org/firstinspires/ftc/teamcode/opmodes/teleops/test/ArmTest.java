@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.subsystems.arm.Arm;
 
-@TeleOp(name = "Test - Arm", group = "Test")
+@TeleOp
 public class ArmTest extends OpMode {
     private Arm arm;
 

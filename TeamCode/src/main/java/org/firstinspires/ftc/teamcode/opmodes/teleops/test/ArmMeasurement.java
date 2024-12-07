@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.subsystems.arm.Arm;
 
-@TeleOp(name = "Test - Arm Measurement")
+@TeleOp
 public class ArmMeasurement extends OpMode {
     private Arm arm;
 

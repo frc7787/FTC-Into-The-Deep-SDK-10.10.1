@@ -27,6 +27,6 @@ public class MoveArmToPositionAction implements Action {
 
         arm.update();
 
-        return arm.state() != Arm.ArmState.AT_POS;
+        return arm.state() != Arm.ArmState.NORMAL;
     }
 }

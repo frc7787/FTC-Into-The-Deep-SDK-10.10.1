@@ -7,8 +7,6 @@ import static org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit.*;
 
 import androidx.annotation.NonNull;
 
-import com.acmerobotics.roadrunner.ftc.GoBildaPinpointDriver;
-import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotorImplEx;
 
@@ -16,7 +14,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.utility.MotorUtility;
 
-public final class MecanumDrive extends SubsystemBase {
+public final class MecanumDrive {
     // ---------------------------------------------------------------------------------------------
     // Hardware
     // ---------------------------------------------------------------------------------------------
@@ -26,7 +24,6 @@ public final class MecanumDrive extends SubsystemBase {
                                          backLeftDriveMotor,
                                          backRightDriveMotor;
 
-    @NonNull private final GoBildaPinpointDriver odometry;
 
     @NonNull private final DcMotorImplEx[] motors;
 
@@ -55,10 +52,6 @@ public final class MecanumDrive extends SubsystemBase {
         motors = new DcMotorImplEx[]{
                 frontLeftDriveMotor, frontRightDriveMotor, backLeftDriveMotor, backRightDriveMotor};
 
-        odometry = opMode.hardwareMap.get(GoBildaPinpointDriver.class, "odometry");
-        odometry.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-        odometry.recalibrateIMU();
-
         MotorUtility.setDirections(REVERSE, frontLeftDriveMotor, backLeftDriveMotor);
         MotorUtility.reset(motors);
         MotorUtility.setZeroPowerBehaviours(BRAKE, motors);
@@ -71,11 +64,6 @@ public final class MecanumDrive extends SubsystemBase {
     public void drive(double drive, double strafe, double turn, DriveMode mode) {
 
         double thetaRadians = StrictMath.atan2(drive, strafe);
-
-        if (mode == DriveMode.FIELD_CENTRIC) {
-            odometry.update();
-            thetaRadians -= odometry.getHeading();
-        }
 
         double power = StrictMath.hypot(strafe, drive);
 
@@ -103,8 +91,6 @@ public final class MecanumDrive extends SubsystemBase {
         backLeftDriveMotor.setPower(backLeftPower);
         backRightDriveMotor.setPower(backRightPower);
     }
-
-    public void resetYaw() { odometry.resetPosAndIMU(); }
 
     // ---------------------------------------------------------------------------------------------
     // Getters
@@ -157,12 +143,6 @@ public final class MecanumDrive extends SubsystemBase {
         telemetry.addData("Front Right", frontRightDriveMotor.getZeroPowerBehavior());
         telemetry.addData("Back Left", backLeftDriveMotor.getZeroPowerBehavior());
         telemetry.addData("Back Right", backRightDriveMotor.getZeroPowerBehavior());
-    }
-
-    public void debugIMU() {
-        telemetry.addLine("----- IMU -----");
-        telemetry.addData("Heading (Radians)", odometry.getHeading());
-        telemetry.addData("Velocity(Radians/Sec)", odometry.getHeadingVelocity());
     }
 
     public void fullDebug() {

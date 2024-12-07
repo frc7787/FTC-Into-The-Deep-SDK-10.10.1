@@ -7,10 +7,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
-import org.firstinspires.ftc.teamcode.constants.LoadStaticFields;
-
-@TeleOp(name = "Servo - Test", group = "Test")
-@LoadStaticFields
+@TeleOp
 public final class ServoTest extends OpMode {
     private static ServoImplEx testServo;
 
