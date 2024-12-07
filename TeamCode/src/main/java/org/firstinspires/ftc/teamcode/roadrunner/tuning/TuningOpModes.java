@@ -12,8 +12,6 @@ import com.qualcomm.robotcore.eventloop.opmode.OpModeRegistrar;
 
 import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
-import org.firstinspires.ftc.teamcode.roadrunner.TankDrive;
-import org.firstinspires.ftc.teamcode.roadrunner.ThreeDeadWheelLocalizer;
 import org.firstinspires.ftc.teamcode.roadrunner.TwoDeadWheelLocalizer;
 
 import java.util.ArrayList;
@@ -53,11 +51,6 @@ public final class TuningOpModes {
                     leftEncs.add(dl.leftBack);
                     rightEncs.add(dl.rightFront);
                     rightEncs.add(dl.rightBack);
-                } else if (md.localizer instanceof ThreeDeadWheelLocalizer) {
-                    ThreeDeadWheelLocalizer dl = (ThreeDeadWheelLocalizer) md.localizer;
-                    parEncs.add(dl.par0);
-                    parEncs.add(dl.par1);
-                    perpEncs.add(dl.perp);
                 } else if (md.localizer instanceof TwoDeadWheelLocalizer) {
                     TwoDeadWheelLocalizer dl = (TwoDeadWheelLocalizer) md.localizer;
                     parEncs.add(dl.par);
@@ -90,49 +83,6 @@ public final class TuningOpModes {
                         () -> new MotorFeedforward(MecanumDrive.PARAMS.kS,
                                 MecanumDrive.PARAMS.kV / MecanumDrive.PARAMS.inPerTick,
                                 MecanumDrive.PARAMS.kA / MecanumDrive.PARAMS.inPerTick)
-                );
-            };
-        } else if (DRIVE_CLASS.equals(TankDrive.class)) {
-            dvf = hardwareMap -> {
-                TankDrive td = new TankDrive(hardwareMap, new Pose2d(0, 0, 0));
-
-                List<Encoder> leftEncs = new ArrayList<>(), rightEncs = new ArrayList<>();
-                List<Encoder> parEncs = new ArrayList<>(), perpEncs = new ArrayList<>();
-                if (td.localizer instanceof TankDrive.DriveLocalizer) {
-                    TankDrive.DriveLocalizer dl = (TankDrive.DriveLocalizer) td.localizer;
-                    leftEncs.addAll(dl.leftEncs);
-                    rightEncs.addAll(dl.rightEncs);
-                } else if (td.localizer instanceof ThreeDeadWheelLocalizer) {
-                    ThreeDeadWheelLocalizer dl = (ThreeDeadWheelLocalizer) td.localizer;
-                    parEncs.add(dl.par0);
-                    parEncs.add(dl.par1);
-                    perpEncs.add(dl.perp);
-                } else if (td.localizer instanceof TwoDeadWheelLocalizer) {
-                    TwoDeadWheelLocalizer dl = (TwoDeadWheelLocalizer) td.localizer;
-                    parEncs.add(dl.par);
-                    perpEncs.add(dl.perp);
-                } else {
-                    throw new RuntimeException("unknown localizer: " + td.localizer.getClass().getName());
-                }
-
-                return new DriveView(
-                    DriveType.TANK,
-                        TankDrive.PARAMS.inPerTick,
-                        TankDrive.PARAMS.maxWheelVel,
-                        TankDrive.PARAMS.minProfileAccel,
-                        TankDrive.PARAMS.maxProfileAccel,
-                        hardwareMap.getAll(LynxModule.class),
-                        td.leftMotors,
-                        td.rightMotors,
-                        leftEncs,
-                        rightEncs,
-                        parEncs,
-                        perpEncs,
-                        td.lazyImu,
-                        td.voltageSensor,
-                        () -> new MotorFeedforward(TankDrive.PARAMS.kS,
-                                TankDrive.PARAMS.kV / TankDrive.PARAMS.inPerTick,
-                                TankDrive.PARAMS.kA / TankDrive.PARAMS.inPerTick)
                 );
             };
         } else {

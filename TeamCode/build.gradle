@@ -10,23 +10,11 @@
 
 
 // Custom definitions may go here
-buildscript {
-    repositories {
-        mavenCentral()
-        maven {
-            url "https://repo.dairy.foundation/snapshots"
-        }
-    }
-    dependencies {
-        classpath "dev.frozenmilk.sinister.sloth:Load:0.0.2"
-    }
-}
 
 
 // Include common definitions from above.
 apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
-apply plugin: 'dev.frozenmilk.sinister.sloth.Load'
 
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
@@ -43,12 +31,6 @@ repositories {
     maven {
         url = 'https://jitpack.io'
     }
-    maven {
-        url = "https://repo.dairy.foundation/releases"
-    }
-    maven {
-        url = "https://repo.dairy.foundation/snapshots"
-    }
 }
 
 dependencies {
@@ -59,6 +41,4 @@ dependencies {
     implementation "com.acmerobotics.roadrunner:ftc:0.1.14"
     implementation "com.acmerobotics.dashboard:dashboard:0.4.16"
     implementation "org.reflections:reflections:0.9.9-RC1"
-    implementation "dev.frozenmilk.dairy:Core:2.0.0"
-    implementation "dev.frozenmilk.sinister:Sloth:0.0.1"
 }

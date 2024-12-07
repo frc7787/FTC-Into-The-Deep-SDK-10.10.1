@@ -2,12 +2,15 @@ package org.firstinspires.ftc.teamcode.opmodes.teleops.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.subsystems.arm.Arm;
 
 @TeleOp
 public class ArmTest extends OpMode {
     private Arm arm;
+
+    private boolean shouldUpdate = true;
 
     private final double HOME_EXTENSION_INCHES = 0;
     private final double HOME_ROTATION_DEGREES = 45;
@@ -36,17 +39,38 @@ public class ArmTest extends OpMode {
     private final double JUST_OVER_BLOCK_EXTENSION_INCHES = 0;
     private final double JUST_OVER_BLOCK_ROTATION_DEGREES = 12;
 
-    @Override public void init() {
-       arm = new Arm(this);
-    }
+    private Gamepad previousGamepad, currentGamepad;
 
-    @Override public void init_loop() {
-        arm.update();
-        arm.debugPosition();
+    @Override public void init() {
+        arm = new Arm(this);
+        previousGamepad = new Gamepad();
+        currentGamepad = new Gamepad();
     }
 
     @Override public void loop() {
-        arm.debugSetPowers(gamepad1.left_stick_y, gamepad1.right_stick_y);
-        arm.debugCurrent();
+        previousGamepad.copy(currentGamepad);
+        currentGamepad.copy(gamepad1);
+
+        if (shouldUpdate) {
+            arm.update();
+        } else {
+            arm.debugSetPowers(0, gamepad1.left_stick_y * -1.0);
+        }
+
+        if (currentGamepad.cross && !previousGamepad.cross) shouldUpdate = !shouldUpdate;
+
+        telemetry.addData("Should Update", shouldUpdate);
+
+        if (gamepad1.dpad_down) {
+            arm.setTargetPosition(0,0);
+        } else if (gamepad1.dpad_up) {
+            arm.setTargetPosition(40, 40);
+        } else if (gamepad1.dpad_right) {
+            arm.setTargetPosition(30, 30);
+        } else if (gamepad1.dpad_left) {
+            arm.setTargetPosition(20, 20);
+        }
+
+        arm.debugPosition();
     }
 }

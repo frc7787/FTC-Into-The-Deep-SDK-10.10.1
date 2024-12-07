@@ -20,7 +20,7 @@ public class Arm {
     // Configuration
     // ---------------------------------------------------------------------------------------------
 
-    private final double EXTENSION_TICKS_PER_INCH  = 46.60;
+    private final double EXTENSION_TICKS_PER_INCH  = 49.07;
     private final double ROTATION_TICKS_PER_DEGREE = 17.95;
 
     // Physical Properties
@@ -233,11 +233,18 @@ public class Arm {
         }
     }
 
-    public void setTargetPosition(
-            double horizontalExtensionInches,
-            double verticalExtensionInches
-    ) {
+    public void setTargetPosition(double hExtensionInches, double vExtensionInches) {
+        double extensionInches = Math.sqrt(
+                Math.pow(hExtensionInches, 2.0) +
+                Math.pow(vExtensionInches, 2.0) +
+                - Math.pow(1.5, 2)
+        ) - 11.0;
 
+        double rotationDegrees = Math.toDegrees(
+                Math.atan(hExtensionInches / vExtensionInches) - Math.atan(1.5 / (extensionInches + 11)));
+
+        rotationTargetPosition = (int) ((rotationDegrees + 11) * ROTATION_TICKS_PER_DEGREE) + 114;
+        extensionTargetPosition = (int) ((extensionInches+2 )* EXTENSION_TICKS_PER_INCH);
     }
 
     public void setExtensionTargetPosition(double targetInches) {
