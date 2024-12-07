@@ -233,12 +233,11 @@ public class Arm {
         }
     }
 
-    public void setTargetPosition(double extensionInches, double rotationDegrees) {
-        extensionInches = Range.clip(extensionInches, MIN_EXTENSION_INCHES, MAX_EXTENSION_INCHES);
-        rotationDegrees = Range.clip(rotationDegrees, MIN_ROTATION_DEGREES, MAX_ROTATION_DEGREES);
+    public void setTargetPosition(
+            double horizontalExtensionInches,
+            double verticalExtensionInches
+    ) {
 
-        extensionTargetPosition = (int) (extensionInches * EXTENSION_TICKS_PER_INCH);
-        rotationTargetPosition  = (int) (rotationDegrees * ROTATION_TICKS_PER_DEGREE);
     }
 
     public void setExtensionTargetPosition(double targetInches) {
