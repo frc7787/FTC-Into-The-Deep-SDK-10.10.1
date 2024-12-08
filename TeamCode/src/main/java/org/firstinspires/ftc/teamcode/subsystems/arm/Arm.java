@@ -245,7 +245,7 @@ public class Arm {
         extensionInches = Math.max(MIN_EXTENSION_INCHES, extensionInches);
 
         double rotationDegrees = Math.toDegrees(
-                Math.atan(hExtensionInches / vExtensionInches) - Math.atan(1.5 / (extensionInches + MIN_EXTENSION_INCHES)));
+                Math.atan(vExtensionInches / hExtensionInches) - Math.atan(1.5 / (extensionInches + MIN_EXTENSION_INCHES)));
 
         rotationTargetPosition = (int) ((rotationDegrees + 11) * ROTATION_TICKS_PER_DEGREE) + 114;
         extensionTargetPosition = (int) ((extensionInches)* EXTENSION_TICKS_PER_INCH);
