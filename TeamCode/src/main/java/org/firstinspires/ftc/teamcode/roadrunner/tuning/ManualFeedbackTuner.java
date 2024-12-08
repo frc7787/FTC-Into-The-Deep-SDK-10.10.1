@@ -4,6 +4,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.roadrunner.DriveMode;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 import org.firstinspires.ftc.teamcode.roadrunner.TwoDeadWheelLocalizer;
 
@@ -13,7 +14,10 @@ public final class ManualFeedbackTuner extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
          if (TuningOpModes.DRIVE_CLASS.equals(MecanumDrive.class)) {
-            MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
+            MecanumDrive drive = new MecanumDrive.Builder(hardwareMap)
+                    .setDriveMode(DriveMode.ROBOT_CENTRIC)
+                    .setPose(new Pose2d(0,0,0))
+                    .build();
 
             if (drive.localizer instanceof TwoDeadWheelLocalizer) {
                 if (TwoDeadWheelLocalizer.PARAMS.perpXTicks == 0 && TwoDeadWheelLocalizer.PARAMS.parYTicks == 0) {

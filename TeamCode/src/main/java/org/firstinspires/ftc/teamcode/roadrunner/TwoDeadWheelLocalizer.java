@@ -27,7 +27,7 @@ import org.firstinspires.ftc.teamcode.roadrunner.messages.TwoDeadWheelInputsMess
 public final class TwoDeadWheelLocalizer implements Localizer {
     public static class Params {
         public double parYTicks  = 0.0;
-        public double perpXTicks = 2262.0;
+        public double perpXTicks = 2230.0; // Tuner gave 2262, fixed to 2230
     }
 
     public static Params PARAMS = new Params();

@@ -4,8 +4,9 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+import org.firstinspires.ftc.teamcode.roadrunner.DriveMode;
+import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystems.arm.Arm;
-import org.firstinspires.ftc.teamcode.subsystems.mecanumdrive.MecanumDrive;
 
 @TeleOp
 public class TeleOpMain extends OpMode {
@@ -29,7 +30,9 @@ public class TeleOpMain extends OpMode {
     private HookingState hookingState;
 
     @Override public void init() {
-        drive = new MecanumDrive(this);
+        drive = new MecanumDrive.Builder(hardwareMap)
+                .setDriveMode(DriveMode.ROBOT_CENTRIC)
+                .build();
         arm = new Arm(this);
         previousGamepad2 = new Gamepad();
         currentGamepad2 = new Gamepad();
