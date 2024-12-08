@@ -31,7 +31,7 @@ public class Arm {
 
     private final double MIN_ROTATION_DEGREES = 0;
     private final double MAX_ROTATION_DEGREES = 90;
-    private final double MIN_EXTENSION_INCHES = 0;
+    private final double MIN_EXTENSION_INCHES = 11;
     private final double MAX_EXTENSION_INCHES = 45;
 
     private final double MIN_ROTATION_TICKS = MIN_ROTATION_DEGREES * ROTATION_TICKS_PER_DEGREE;
@@ -145,13 +145,7 @@ public class Arm {
                 home();
                 break;
             case NORMAL:
-                if (extensionTargetPosition == 0 && extensionLimitSwitch.isPressed()) {
-                    MotorUtility.reset(leaderExtensionMotor);
-                }
 
-                if (rotationTargetPosition == 0 && frontRotationLimitSwitch.isPressed()) {
-                    MotorUtility.reset(rotationMotor);
-                }
 
                 double rotationPower
                         = rotationController.calculate(rotationPosition, rotationTargetPosition);
@@ -164,6 +158,14 @@ public class Arm {
                     rotationPower = 0.0;
                 } else if (!rotationAtPosition()) {
                     extensionPower = 0.0;
+                }
+
+                if (extensionTargetPosition <= 0 && extensionLimitSwitch.isPressed()) {
+                    extensionPower = 0.0;
+                }
+
+                if (rotationTargetPosition <= 0 && frontRotationLimitSwitch.isPressed()) {
+                    rotationPower = 0.0;
                 }
 
                 if (rotationAtPosition()) rotationPower = 0.0;
@@ -238,13 +240,15 @@ public class Arm {
                 Math.pow(hExtensionInches, 2.0) +
                 Math.pow(vExtensionInches, 2.0) +
                 - Math.pow(1.5, 2)
-        ) - 11.0;
+        ) - MIN_EXTENSION_INCHES;
+
+        extensionInches = Math.max(MIN_EXTENSION_INCHES, extensionInches);
 
         double rotationDegrees = Math.toDegrees(
-                Math.atan(hExtensionInches / vExtensionInches) - Math.atan(1.5 / (extensionInches + 11)));
+                Math.atan(hExtensionInches / vExtensionInches) - Math.atan(1.5 / (extensionInches + MIN_EXTENSION_INCHES)));
 
         rotationTargetPosition = (int) ((rotationDegrees + 11) * ROTATION_TICKS_PER_DEGREE) + 114;
-        extensionTargetPosition = (int) ((extensionInches+2 )* EXTENSION_TICKS_PER_INCH);
+        extensionTargetPosition = (int) ((extensionInches)* EXTENSION_TICKS_PER_INCH);
     }
 
     public void setExtensionTargetPosition(double targetInches) {
