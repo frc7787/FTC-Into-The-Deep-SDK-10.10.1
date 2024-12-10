@@ -62,13 +62,13 @@ public class ArmTest extends OpMode {
         telemetry.addData("Should Update", shouldUpdate);
 
         if (gamepad1.dpad_down) {
-            arm.setTargetPosition(0,0);
+            arm.setTargetPositionInches(0,0);
         } else if (gamepad1.dpad_up) {
-            arm.setTargetPosition(40, 40);
+            arm.setTargetPositionInches(40, 40);
         } else if (gamepad1.dpad_right) {
-            arm.setTargetPosition(30, 30);
+            arm.setTargetPositionInches(30, 30);
         } else if (gamepad1.dpad_left) {
-            arm.setTargetPosition(20, 20);
+            arm.setTargetPositionInches(20, 20);
         }
 
         arm.debugPosition();

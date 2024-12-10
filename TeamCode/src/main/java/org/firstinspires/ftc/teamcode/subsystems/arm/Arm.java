@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotorImplEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -31,7 +32,7 @@ public class Arm {
 
     private final double MIN_ROTATION_DEGREES = 0;
     private final double MAX_ROTATION_DEGREES = 90;
-    private final double MIN_EXTENSION_INCHES = 11;
+    private final double MIN_EXTENSION_INCHES = 6;
     private final double MAX_EXTENSION_INCHES = 45;
 
     private final double MIN_ROTATION_TICKS = MIN_ROTATION_DEGREES * ROTATION_TICKS_PER_DEGREE;
@@ -53,8 +54,8 @@ public class Arm {
     private final double EXTENSION_HOMING_POWER = -0.8;
     private final double ROTATION_HOMING_POWER  = -0.6;
 
-    private final int EXTENSION_POSITION_THRESHOLD = 10;
-    private final int ROTATION_POSITION_THRESHOLD  = 10;
+    private final int EXTENSION_POSITION_THRESHOLD = 45;
+    private final int ROTATION_POSITION_THRESHOLD  = 36;
 
     // Intake
     private final double INTAKE_OPEN_POSITION   = 0.0;
@@ -83,6 +84,10 @@ public class Arm {
 
     private int rotationTargetPosition, extensionTargetPosition;
     private int rotationPosition, extensionPosition;
+    private double vExtensionTargetInches, hExtensionTargetInches;
+
+    private boolean isFirstManualControlIteration;
+    private ElapsedTime manualControlTimer;
 
     // ---------------------------------------------------------------------------------------------
     // Debug
@@ -95,7 +100,7 @@ public class Arm {
     // ---------------------------------------------------------------------------------------------
 
     private final PIDController extensionController
-            = new PIDController(0.0087, 0, 0.00012);
+            = new PIDController(0.0084, 0, 0.00001);
 
     private final PIDController rotationController
             = new PIDController(0.0092, 0, 0.000012);
@@ -130,6 +135,9 @@ public class Arm {
 
         armState    = ArmState.HOMING;
         homingState = HomingState.START;
+        isFirstManualControlIteration = true;
+        manualControlTimer = new ElapsedTime();
+        manualControlTimer.reset();
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -145,8 +153,6 @@ public class Arm {
                 home();
                 break;
             case NORMAL:
-
-
                 double rotationPower
                         = rotationController.calculate(rotationPosition, rotationTargetPosition);
                 rotationPower = Range.clip(rotationPower, MIN_ROTATION_POWER, MAX_ROTATION_POWER);
@@ -154,17 +160,15 @@ public class Arm {
                         = extensionController.calculate(extensionPosition, extensionTargetPosition);
                 extensionPower = Range.clip(extensionPower, MIN_EXTENSION_POWER, MAX_EXTENSION_POWER);
 
-                if (rotationTargetPosition <= rotationPosition && !extensionAtPosition()) {
-                    rotationPower = 0.0;
-                } else if (!rotationAtPosition()) {
-                    extensionPower = 0.0;
-                }
-
                 if (extensionTargetPosition <= 0 && extensionLimitSwitch.isPressed()) {
                     extensionPower = 0.0;
                 }
 
                 if (rotationTargetPosition <= 0 && frontRotationLimitSwitch.isPressed()) {
+                    rotationPower = 0.0;
+                }
+
+                if (backRotationLimitSwitch.isPressed() && rotationPower >= 0.0) {
                     rotationPower = 0.0;
                 }
 
@@ -176,6 +180,22 @@ public class Arm {
                 rotationMotor.setPower(rotationPower);
                 break;
         }
+    }
+
+    public void manualControl(double hInput, double vInput) {
+       if (isFirstManualControlIteration) {
+           manualControlTimer.reset();
+           isFirstManualControlIteration = false;
+       } else {
+            cartesianToPolar(
+                    hExtensionTargetInches + (hInput / manualControlTimer.seconds()),
+                    vExtensionTargetInches + (vInput / manualControlTimer.seconds())
+            );
+       }
+    }
+
+    public void resetManualControl() {
+        isFirstManualControlIteration = true;
     }
 
     private void home() {
@@ -235,7 +255,7 @@ public class Arm {
         }
     }
 
-    public void setTargetPosition(double hExtensionInches, double vExtensionInches) {
+    private void cartesianToPolar(double hExtensionInches, double vExtensionInches) {
         double extensionInches = Math.sqrt(
                 Math.pow(hExtensionInches, 2.0) +
                 Math.pow(vExtensionInches, 2.0) +
@@ -251,14 +271,16 @@ public class Arm {
         extensionTargetPosition = (int) ((extensionInches)* EXTENSION_TICKS_PER_INCH);
     }
 
-    public void setExtensionTargetPosition(double targetInches) {
-        targetInches = Range.clip(targetInches, MIN_EXTENSION_INCHES, MAX_EXTENSION_INCHES);
-        this.extensionTargetPosition = (int) (targetInches * EXTENSION_TICKS_PER_INCH);
+    public void setTargetPositionInches(double hExtensionTargetInches, double vExtensionTargetInches) {
+        if (hExtensionTargetInches >= 30) hExtensionTargetInches = 30;
+        this.hExtensionTargetInches = hExtensionTargetInches;
+        this.vExtensionTargetInches = vExtensionTargetInches;
+        cartesianToPolar(hExtensionTargetInches,vExtensionTargetInches);// TODO More accurate zone box
     }
 
-    public void setRotationTargetPosition(double targetDegrees) {
-        targetDegrees = Range.clip(targetDegrees, MIN_ROTATION_DEGREES, MAX_ROTATION_DEGREES);
-        this.rotationTargetPosition = (int) (targetDegrees * ROTATION_TICKS_PER_DEGREE);
+    public void setExtensionTargetPosition(double extensionInches) {
+        extensionInches = Math.min(25, Math.max(extensionInches, 0));
+        extensionTargetPosition = (int) (extensionInches * EXTENSION_TICKS_PER_INCH);
     }
 
     public void setIntakePosition(double position) {
@@ -273,6 +295,14 @@ public class Arm {
 
     public ArmState state() { return armState; }
 
+    public double hExtensionTargetInches() {
+        return hExtensionTargetInches;
+    }
+
+    public double vExtensionTargetInches() {
+        return vExtensionTargetInches;
+    }
+
     public int rotationPosition() { return rotationMotor.getCurrentPosition(); }
 
     public int extensionPosition() { return leaderExtensionMotor.getCurrentPosition(); }
@@ -284,6 +314,10 @@ public class Arm {
                 + INTAKE_LENGTH_INCHES;
     }
 
+    public double intakePosition() {
+        return intakeServo.getPosition();
+    }
+
     public int rotationTargetPosition() { return rotationTargetPosition; }
 
     public int extensionTargetPosition() { return extensionTargetPosition; }
@@ -292,7 +326,7 @@ public class Arm {
         return rotationTargetPosition / ROTATION_TICKS_PER_DEGREE;
     }
 
-    public double targetExtensionInches() {
+    public double targetInches() {
         return extensionTargetPosition / EXTENSION_TICKS_PER_INCH;
     }
 
@@ -338,7 +372,7 @@ public class Arm {
         telemetry.addData("Position", leaderExtensionMotor.getCurrentPosition());
         telemetry.addData("Target Position", extensionTargetPosition);
         telemetry.addData("Inches", leaderExtensionMotor.getCurrentPosition() / EXTENSION_TICKS_PER_INCH);
-        telemetry.addData("Target Inches", targetExtensionInches());
+        telemetry.addData("Target Inches", targetInches());
         telemetry.addData("Power", leaderExtensionMotor.getPower());
         telemetry.addData("At Position", extensionAtPosition());
         telemetry.addLine("----- Rotation -----");

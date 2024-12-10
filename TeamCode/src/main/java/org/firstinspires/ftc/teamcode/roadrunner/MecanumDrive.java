@@ -69,9 +69,9 @@ public class MecanumDrive {
     public static double KA = 0.00005;
 
     // Path Profile Parameters
-    public static double MAX_WHEEL_VELOCITY = 50;
+    public static double MAX_WHEEL_VELOCITY = 70;
     public static double MIN_PROFILE_ACCELERATION = -30;
-    public static double MAX_PROFILE_ACCELERATION = 50;
+    public static double MAX_PROFILE_ACCELERATION = 60;
 
     // Turn Profile Parameters (in radians)
     public static double MAX_ANGULAR_VELOCITY_RADIANS = Math.PI; // shared with path

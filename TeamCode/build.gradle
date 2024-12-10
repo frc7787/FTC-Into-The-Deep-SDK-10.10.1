@@ -40,5 +40,4 @@ dependencies {
     implementation "com.acmerobotics.roadrunner:actions:1.0.0"
     implementation "com.acmerobotics.roadrunner:ftc:0.1.14"
     implementation "com.acmerobotics.dashboard:dashboard:0.4.16"
-    implementation "org.reflections:reflections:0.9.9-RC1"
 }
