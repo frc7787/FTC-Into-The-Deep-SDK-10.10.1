@@ -28,8 +28,8 @@ public class Arm {
 
     // Physical Properties
     private final double INTAKE_LENGTH_INCHES = 0.0;
-    private final double ROTATION_X_OFFSET_INCHES = 5;
-    private final double ROTATION_Y_OFFSET_INCHES = 4.75;
+    private final double ROTATION_X_OFFSET_INCHES = 9;
+    private final double ROTATION_Y_OFFSET_INCHES = -4.75;
     private final double ARM_STARTING_ANGLE_DEGREES = -11.0;
 
     private final double MIN_ROTATION_DEGREES = 0;
@@ -46,7 +46,7 @@ public class Arm {
     private final double EXTENSION_HOMING_POWER = -0.8;
     private final double ROTATION_HOMING_POWER  = -0.6;
 
-    private final int EXTENSION_POSITION_THRESHOLD = 120;
+    private final int EXTENSION_POSITION_THRESHOLD = 150;
     private final int EXTENSION_NEGATIVE_THRESHOLD = (int) (2 / 1.5 * EXTENSION_POSITION_THRESHOLD);
     private final int ROTATION_POSITION_THRESHOLD  = 36;
 
@@ -133,7 +133,7 @@ public class Arm {
         hExtensionTargetInches = START_POSITION_XY[0];
         vExtensionTargetInches = START_POSITION_XY[1];
 
-        armState    = ArmState.HOMING;
+        armState = ArmState.HOMING;
         homingState = HomingState.START;
         isFirstManualControlIteration = true;
         manualControlTimer = new ElapsedTime();
@@ -145,7 +145,7 @@ public class Arm {
     // ---------------------------------------------------------------------------------------------
 
     public void update() {
-        rotationPosition  = rotationMotor.getCurrentPosition();
+        rotationPosition = rotationMotor.getCurrentPosition();
         extensionPosition = leaderExtensionMotor.getCurrentPosition();
 
         switch (armState) {
@@ -159,6 +159,8 @@ public class Arm {
                 double extensionPower
                         = extensionController.calculate(extensionPosition, extensionTargetPosition);
                 extensionPower = Range.clip(extensionPower, MIN_EXTENSION_POWER, MAX_EXTENSION_POWER);
+
+                
 
                 if (extensionTargetPosition <= 0 && extensionLimitSwitch.isPressed()) {
                     extensionPower = 0.0;
@@ -198,6 +200,7 @@ public class Arm {
            hExtensionTargetInches += (hInput * manualControlTimer.seconds() * speed);
            vExtensionTargetInches += (vInput * manualControlTimer.seconds() * speed);
            manualControlTimer.reset();
+           if (hExtensionTargetInches > 30) hExtensionTargetInches = 30;
            cartesianToPolar(hExtensionTargetInches, vExtensionTargetInches);
        }
     }
@@ -279,13 +282,20 @@ public class Arm {
 
         rotationTargetPosition = (int) ((rotationDegrees + 11) * ROTATION_TICKS_PER_DEGREE) + (int) (114 * multiplier);
         extensionTargetPosition = (int) ((extensionInches)* EXTENSION_TICKS_PER_INCH);
+        if (extensionTargetPosition < 0) extensionTargetPosition = 0;
     }
 
     public void setTargetPositionInches(double hExtensionTargetInches, double vExtensionTargetInches) {
         if (hExtensionTargetInches >= 30) hExtensionTargetInches = 30;
         this.hExtensionTargetInches = hExtensionTargetInches;
         this.vExtensionTargetInches = vExtensionTargetInches;
-        cartesianToPolar(hExtensionTargetInches,vExtensionTargetInches);// TODO More accurate zone box
+        cartesianToPolar(hExtensionTargetInches,vExtensionTargetInches);
+    }
+
+    public void setTargetPositionRobotCentric(double hExtensionTargetInches, double vExtensionTargetInches) {
+        hExtensionTargetInches += ROTATION_X_OFFSET_INCHES;
+        vExtensionTargetInches += ROTATION_Y_OFFSET_INCHES;
+        setTargetPositionInches(hExtensionTargetInches, vExtensionTargetInches);
     }
 
     public void setExtensionTargetPosition(double extensionInches) {

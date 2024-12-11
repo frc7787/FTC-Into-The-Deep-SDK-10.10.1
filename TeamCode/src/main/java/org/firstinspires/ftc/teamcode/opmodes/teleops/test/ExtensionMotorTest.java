@@ -14,7 +14,12 @@ public class ExtensionMotorTest extends OpMode {
     }
 
     @Override public void loop() {
-        arm.manualControl(-gamepad1.right_stick_y, -gamepad1.left_stick_y);
+        if (gamepad1.dpad_up) {
+            arm.setTargetPositionRobotCentric(10, 10);
+        } else if (gamepad1.dpad_left) {
+            arm.setTargetPositionRobotCentric(-2.0, 7);
+        }
+
         arm.update();
         arm.debugPosition();
     }
