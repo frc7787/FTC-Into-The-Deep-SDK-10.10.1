@@ -21,8 +21,10 @@ public class Arm {
     // Configuration
     // ---------------------------------------------------------------------------------------------
 
-    private final double EXTENSION_TICKS_PER_INCH  = 49.07;
-    private final double ROTATION_TICKS_PER_DEGREE = 17.95;
+    private final double multiplier = 1150.0 / 312.0;
+
+    private final double EXTENSION_TICKS_PER_INCH  = 394;
+    private final double ROTATION_TICKS_PER_DEGREE = 17.95 * multiplier;
 
     // Physical Properties
     private final double INTAKE_LENGTH_INCHES = 0.0;
@@ -32,18 +34,8 @@ public class Arm {
 
     private final double MIN_ROTATION_DEGREES = 0;
     private final double MAX_ROTATION_DEGREES = 90;
-    private final double MIN_EXTENSION_INCHES = 6;
+    private final double MIN_EXTENSION_INCHES = 11;
     private final double MAX_EXTENSION_INCHES = 45;
-
-    private final double MIN_ROTATION_TICKS = MIN_ROTATION_DEGREES * ROTATION_TICKS_PER_DEGREE;
-    private final double MAX_ROTATION_TICKS = MAX_ROTATION_DEGREES * ROTATION_TICKS_PER_DEGREE;
-
-    private final double MIN_EXTENSION_TICKS = MIN_EXTENSION_INCHES * EXTENSION_TICKS_PER_INCH;
-    private final double MAX_EXTENSION_TICKS = MAX_EXTENSION_INCHES * EXTENSION_TICKS_PER_INCH;
-
-    // Software limitations
-    private final double FORWARD_EXTENSION_LIMIT_INCHES = 60;
-    private final double ROTATION_LIMIT_DEGREES         = 95;
 
     private final double MAX_EXTENSION_POWER = 1.0;
     private final double MIN_EXTENSION_POWER = -1.0;
@@ -54,8 +46,13 @@ public class Arm {
     private final double EXTENSION_HOMING_POWER = -0.8;
     private final double ROTATION_HOMING_POWER  = -0.6;
 
-    private final int EXTENSION_POSITION_THRESHOLD = 45;
+    private final int EXTENSION_POSITION_THRESHOLD = 120;
+    private final int EXTENSION_NEGATIVE_THRESHOLD = (int) (2 / 1.5 * EXTENSION_POSITION_THRESHOLD);
     private final int ROTATION_POSITION_THRESHOLD  = 36;
+
+    private final double DEFAULT_MANUAL_SPEED = 2; // In/Sec
+
+    private final double[] START_POSITION_XY = new double[]{11.0, 0.0};
 
     // Intake
     private final double INTAKE_OPEN_POSITION   = 0.0;
@@ -100,7 +97,7 @@ public class Arm {
     // ---------------------------------------------------------------------------------------------
 
     private final PIDController extensionController
-            = new PIDController(0.0084, 0, 0.00001);
+            = new PIDController(0.00135, 0, 0.0001);
 
     private final PIDController rotationController
             = new PIDController(0.0092, 0, 0.000012);
@@ -132,6 +129,9 @@ public class Arm {
 
         extensionTargetPosition = 0;
         rotationTargetPosition  = 0;
+
+        hExtensionTargetInches = START_POSITION_XY[0];
+        vExtensionTargetInches = START_POSITION_XY[1];
 
         armState    = ArmState.HOMING;
         homingState = HomingState.START;
@@ -172,6 +172,14 @@ public class Arm {
                     rotationPower = 0.0;
                 }
 
+                if (-0.1 < rotationPower && rotationPower < 0.1 && rotationAtPosition()) {
+                    rotationPower = 0.0;
+                }
+
+                if (-0.2 < extensionPower && extensionPower < 0.15 && extensionAtPosition()) {
+                    extensionPower = 0.0;
+                }
+
                 if (rotationAtPosition()) rotationPower = 0.0;
                 if (extensionAtPosition()) extensionPower = 0.0;
 
@@ -182,16 +190,20 @@ public class Arm {
         }
     }
 
-    public void manualControl(double hInput, double vInput) {
+    public void manualControl(double hInput, double vInput, double speed) {
        if (isFirstManualControlIteration) {
            manualControlTimer.reset();
            isFirstManualControlIteration = false;
        } else {
-            cartesianToPolar(
-                    hExtensionTargetInches + (hInput / manualControlTimer.seconds()),
-                    vExtensionTargetInches + (vInput / manualControlTimer.seconds())
-            );
+           hExtensionTargetInches += (hInput * manualControlTimer.seconds() * speed);
+           vExtensionTargetInches += (vInput * manualControlTimer.seconds() * speed);
+           manualControlTimer.reset();
+           cartesianToPolar(hExtensionTargetInches, vExtensionTargetInches);
        }
+    }
+
+    public void manualControl(double hInput, double vInput) {
+        manualControl(hInput, vInput, DEFAULT_MANUAL_SPEED);
     }
 
     public void resetManualControl() {
@@ -262,12 +274,10 @@ public class Arm {
                 - Math.pow(1.5, 2)
         ) - MIN_EXTENSION_INCHES;
 
-        extensionInches = Math.max(MIN_EXTENSION_INCHES, extensionInches);
-
         double rotationDegrees = Math.toDegrees(
                 Math.atan(vExtensionInches / hExtensionInches) - Math.atan(1.5 / (extensionInches + MIN_EXTENSION_INCHES)));
 
-        rotationTargetPosition = (int) ((rotationDegrees + 11) * ROTATION_TICKS_PER_DEGREE) + 114;
+        rotationTargetPosition = (int) ((rotationDegrees + 11) * ROTATION_TICKS_PER_DEGREE) + (int) (114 * multiplier);
         extensionTargetPosition = (int) ((extensionInches)* EXTENSION_TICKS_PER_INCH);
     }
 
@@ -341,13 +351,11 @@ public class Arm {
     }
 
     public boolean extensionAtPosition() {
-        return Math.abs(extensionPosition - extensionTargetPosition) <= EXTENSION_POSITION_THRESHOLD;
+        return extensionPosition <= EXTENSION_POSITION_THRESHOLD + extensionTargetPosition
+                && extensionPosition >= -EXTENSION_NEGATIVE_THRESHOLD + extensionTargetPosition;
     }
 
-    public boolean isAtPosition() {
-        return Math.abs(rotationPosition - rotationTargetPosition) <= ROTATION_POSITION_THRESHOLD
-                && Math.abs(extensionPosition - extensionTargetPosition) <= EXTENSION_POSITION_THRESHOLD;
-    }
+    public boolean isAtPosition() { return rotationAtPosition() && extensionAtPosition(); }
 
     // ---------------------------------------------------------------------------------------------
     // Debug
@@ -382,6 +390,8 @@ public class Arm {
         telemetry.addData("Target Degrees", targetAngleDegrees());
         telemetry.addData("Power", rotationMotor.getPower());
         telemetry.addData("At Position", rotationAtPosition());
+        telemetry.addData("Horizontal Target Inches", hExtensionTargetInches);
+        telemetry.addData("Vertical Target Inches", vExtensionTargetInches);
     }
 
     public void debugCurrent() {
