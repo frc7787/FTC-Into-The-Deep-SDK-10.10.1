@@ -66,7 +66,7 @@ public class MecanumDrive {
     // Weird behaviour had to turn down originally calculated 0.00257
     public static double KV = 0.000207;
     // Bad deceleration cannot tune higher
-    public static double KA = 0.00005;
+    public static double KA = 0.00006;
 
     // Path Profile Parameters
     public static double MAX_WHEEL_VELOCITY = 70;

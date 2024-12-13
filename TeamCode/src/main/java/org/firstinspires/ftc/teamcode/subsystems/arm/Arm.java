@@ -21,10 +21,8 @@ public class Arm {
     // Configuration
     // ---------------------------------------------------------------------------------------------
 
-    private final double multiplier = 1150.0 / 312.0;
-
     private final double EXTENSION_TICKS_PER_INCH  = 394;
-    private final double ROTATION_TICKS_PER_DEGREE = 17.95 * multiplier;
+    private final double ROTATION_TICKS_PER_DEGREE = 29.03;
 
     // Physical Properties
     private final double INTAKE_LENGTH_INCHES = 0.0;
@@ -40,7 +38,9 @@ public class Arm {
     private final double MAX_EXTENSION_POWER = 1.0;
     private final double MIN_EXTENSION_POWER = -1.0;
     private final double MAX_ROTATION_POWER  = 1.0;
-    private final double MIN_ROTATION_POWER  = -0.8;
+    private final double MIN_ROTATION_POWER  = -1.0;
+
+    private double maxSpeed;
 
     // Miscellaneous
     private final double EXTENSION_HOMING_POWER = -0.8;
@@ -130,6 +130,8 @@ public class Arm {
         extensionTargetPosition = 0;
         rotationTargetPosition  = 0;
 
+        maxSpeed = MAX_EXTENSION_POWER;
+
         hExtensionTargetInches = START_POSITION_XY[0];
         vExtensionTargetInches = START_POSITION_XY[1];
 
@@ -158,9 +160,7 @@ public class Arm {
                 rotationPower = Range.clip(rotationPower, MIN_ROTATION_POWER, MAX_ROTATION_POWER);
                 double extensionPower
                         = extensionController.calculate(extensionPosition, extensionTargetPosition);
-                extensionPower = Range.clip(extensionPower, MIN_EXTENSION_POWER, MAX_EXTENSION_POWER);
-
-                
+                extensionPower = Range.clip(extensionPower, MIN_EXTENSION_POWER, maxSpeed);
 
                 if (extensionTargetPosition <= 0 && extensionLimitSwitch.isPressed()) {
                     extensionPower = 0.0;
@@ -192,6 +192,12 @@ public class Arm {
         }
     }
 
+    public void stop() {
+        rotationMotor.setPower(0);
+        followerExtensionMotor.setPower(0);
+        leaderExtensionMotor.setPower(0);
+    }
+
     public void manualControl(double hInput, double vInput, double speed) {
        if (isFirstManualControlIteration) {
            manualControlTimer.reset();
@@ -201,6 +207,7 @@ public class Arm {
            vExtensionTargetInches += (vInput * manualControlTimer.seconds() * speed);
            manualControlTimer.reset();
            if (hExtensionTargetInches > 30) hExtensionTargetInches = 30;
+           if (vExtensionTargetInches < -5) vExtensionTargetInches = -5;
            cartesianToPolar(hExtensionTargetInches, vExtensionTargetInches);
        }
     }
@@ -280,7 +287,7 @@ public class Arm {
         double rotationDegrees = Math.toDegrees(
                 Math.atan(vExtensionInches / hExtensionInches) - Math.atan(1.5 / (extensionInches + MIN_EXTENSION_INCHES)));
 
-        rotationTargetPosition = (int) ((rotationDegrees + 11) * ROTATION_TICKS_PER_DEGREE) + (int) (114 * multiplier);
+        rotationTargetPosition = (int) ((rotationDegrees + 11) * ROTATION_TICKS_PER_DEGREE) + (int) (194);
         extensionTargetPosition = (int) ((extensionInches)* EXTENSION_TICKS_PER_INCH);
         if (extensionTargetPosition < 0) extensionTargetPosition = 0;
     }
@@ -292,7 +299,7 @@ public class Arm {
         cartesianToPolar(hExtensionTargetInches,vExtensionTargetInches);
     }
 
-    public void setTargetPositionRobotCentric(double hExtensionTargetInches, double vExtensionTargetInches) {
+    public void setTargetPositionInchesRobotCentric(double hExtensionTargetInches, double vExtensionTargetInches) {
         hExtensionTargetInches += ROTATION_X_OFFSET_INCHES;
         vExtensionTargetInches += ROTATION_Y_OFFSET_INCHES;
         setTargetPositionInches(hExtensionTargetInches, vExtensionTargetInches);
@@ -308,6 +315,10 @@ public class Arm {
     }
 
     public void zeroIntake() { intakeServo.setPosition(0.0); }
+
+    public void setMaxSpeed(double speed) {
+        maxSpeed = Range.clip(speed, 0.0, 1.0);
+    }
 
     // ---------------------------------------------------------------------------------------------
     // Getters

@@ -13,27 +13,30 @@ public class TeleOpMain extends OpMode {
     private MecanumDrive drive;
     private Arm arm;
 
-    private double INTAKE_OPEN_POSITION = 0.50;
-    private double INTAKE_SUB_PRIMED_POSITION = 0.30;
-    private double INTAKE_CLOSED_POSITION = 0.00;
-    private double INTAKE_SPECIMEN_PICKUP_POSITION = 0.25;
-    private double INTAKE_CLIPPING_POSITION = 0.22;
+    private final double INTAKE_OPEN_POSITION = 0.50;
+    private final double INTAKE_SUB_PRIMED_POSITION = 0.35;
+    private final double INTAKE_CLOSED_POSITION = 0.00;
+    private final double INTAKE_SPECIMEN_PICKUP_POSITION = 0.25;
+    private final double INTAKE_CLIPPING_POSITION = 0.22;
 
-    private double BUCKET_VERTICAL_POSITION = 42.0;
-    private double BUCKET_HORIZONTAL_POSITION = 5;
-    private double BAR_VERTICAL_POSITION = 26.0;
-    private double BAR_HORIZONTAL_POSITION = 2.0;
+    private final double BUCKET_VERTICAL_POSITION = 39.0;
+    private final double BUCKET_HORIZONTAL_POSITION = 5;
+    private final double BAR_VERTICAL_POSITION = 24.5;
+    private final double BAR_HORIZONTAL_POSITION = 1.5;
 
-    private double SUB_VERTICAL_POSITION = 0.4;
-    private double SUB_HORIZONTAL_POSITION = 2.0;
+    private final double SUB_VERTICAL_POSITION = 0.4;
+    private final double SUB_HORIZONTAL_POSITION = 2.0;
 
-    private double NEUTRAL_VERTICAL_POSITION = 5.0;
-    private double NEUTRAL_HORIZONTAL_POSITION = 3.0;
+    private final double NEUTRAL_VERTICAL_POSITION = 6.0;
+    private final double NEUTRAL_HORIZONTAL_POSITION = 3.0;
 
-    private double GROUND_VERTICAL_POSITION = -2.0;
-    private double GROUND_HORIZONTAL_POSITION = 0.0;
+    private final double GROUND_VERTICAL_POSITION = -2.0;
+    private final double GROUND_HORIZONTAL_POSITION = 0.0;
 
-    private double HOVER_VERTICAL_POSITION = 0.3;
+    private final double HOVER_VERTICAL_POSITION = 0.3;
+
+    private final double WALL_VERTICAL_INCHES = 10;
+    private final double WALL_HORIZONTAL_INCHES = 2;
 
     private Gamepad previousGamepad2, currentGamepad2, previousGamepad1, currentGamepad1;
 
@@ -70,6 +73,8 @@ public class TeleOpMain extends OpMode {
 
         if (gamepad2.left_bumper) {
             arm.setIntakePosition(INTAKE_OPEN_POSITION);
+        } else if (gamepad2.right_bumper) {
+            arm.setIntakePosition(INTAKE_CLOSED_POSITION);
         }
 
         switch (armState) {
@@ -77,36 +82,40 @@ public class TeleOpMain extends OpMode {
                 if (arm.state() != Arm.ArmState.HOMING) { armState = ArmState.NEUTRAL; }
                 break;
             case NEUTRAL:
-            case BUCKET:
-            case HOOKING:
-            case GROUND:
                 if (gamepad2.triangle) {
-                    arm.setTargetPositionRobotCentric(BUCKET_HORIZONTAL_POSITION, BUCKET_VERTICAL_POSITION);
-                    armState = ArmState.BUCKET;
-                } else if (gamepad2.circle) {
-                    arm.setTargetPositionRobotCentric(BAR_HORIZONTAL_POSITION, BAR_VERTICAL_POSITION);
-                    armState = ArmState.HOOKING;
+                    arm.setTargetPositionInchesRobotCentric(BUCKET_HORIZONTAL_POSITION, BUCKET_VERTICAL_POSITION);
+                } else if (gamepad2.square) {
+                    arm.setTargetPositionInchesRobotCentric(BAR_HORIZONTAL_POSITION, BAR_VERTICAL_POSITION);
                 } else if (currentGamepad1.left_bumper && !previousGamepad1.left_bumper) {
-                    arm.setTargetPositionRobotCentric(NEUTRAL_HORIZONTAL_POSITION, NEUTRAL_VERTICAL_POSITION);
+                    arm.setTargetPositionInchesRobotCentric(NEUTRAL_HORIZONTAL_POSITION, NEUTRAL_VERTICAL_POSITION);
                     arm.setIntakePosition(INTAKE_SUB_PRIMED_POSITION);
                     armState = ArmState.SUB;
                 } else if (gamepad2.dpad_left) {
-                    arm.setTargetPositionRobotCentric(GROUND_HORIZONTAL_POSITION, GROUND_VERTICAL_POSITION);
-                    armState = ArmState.GROUND;
+                    arm.setTargetPositionInchesRobotCentric(WALL_HORIZONTAL_INCHES, WALL_VERTICAL_INCHES);
+                } else if (currentGamepad2.dpad_down) {
+                    arm.setExtensionTargetPosition(arm.targetInches() - 6);
+                } else {
+                    double gamepadleftX = gamepad2.left_stick_x;
+                    double gamepadleftY = -gamepad2.left_stick_y;
+
+                    if (Math.abs(gamepadleftX) < 0.1) gamepadleftX = 0;
+                    if (Math.abs(gamepadleftY) < 0.1) gamepadleftY = 0;
+
+                    arm.manualControl(gamepadleftX, gamepadleftY, 10);
                 }
                 break;
             case SUB:
+                arm.setIntakePosition(INTAKE_SUB_PRIMED_POSITION);
+
                 if (currentGamepad1.left_bumper && !previousGamepad1.left_bumper) {
-                    arm.setTargetPositionRobotCentric(NEUTRAL_HORIZONTAL_POSITION, NEUTRAL_VERTICAL_POSITION);
-                    arm.setIntakePosition(INTAKE_SUB_PRIMED_POSITION);
+                    arm.setTargetPositionInchesRobotCentric(NEUTRAL_HORIZONTAL_POSITION, NEUTRAL_VERTICAL_POSITION);
                     armState = ArmState.NEUTRAL;
+                    arm.setIntakePosition(INTAKE_CLOSED_POSITION);
                 } else {
                     if (currentGamepad1.dpad_up && !previousGamepad1.dpad_up) {
                        arm.setTargetPositionInches(arm.hExtensionTargetInches(), -1);
-                       arm.setIntakePosition(INTAKE_CLOSED_POSITION);
                     } else if (currentGamepad1.dpad_down && !previousGamepad1.dpad_down) {
-                        arm.setTargetPositionInches(arm.hExtensionTargetInches(), -3);
-                        arm.setIntakePosition(INTAKE_SUB_PRIMED_POSITION);
+                        arm.setTargetPositionInches(arm.hExtensionTargetInches(), -5);
                     } else {
                         double gamepadleftX = gamepad2.left_stick_x;
                         double gamepadleftY = -gamepad2.left_stick_y;
@@ -114,7 +123,7 @@ public class TeleOpMain extends OpMode {
                         if (Math.abs(gamepadleftX) < 0.1) gamepadleftX = 0;
                         if (Math.abs(gamepadleftY) < 0.1) gamepadleftY = 0;
 
-                        arm.manualControl(gamepadleftX, gamepadleftY, 8);
+                        arm.manualControl(gamepadleftX, gamepadleftY, 10);
                     }
                 }
                 break;
@@ -123,15 +132,12 @@ public class TeleOpMain extends OpMode {
         telemetry.addData("Servo Position", arm.intakePosition());
         telemetry.addData("Arm State", armState);
         arm.debugPosition();
+        arm.debugGlobal();
         arm.update();
     }
 
     private enum ArmState {
-        HOVERING,
         INTAKING,
-        BUCKET,
-        HOOKING,
-        GROUND,
         HOMING,
         NEUTRAL,
         SUB
