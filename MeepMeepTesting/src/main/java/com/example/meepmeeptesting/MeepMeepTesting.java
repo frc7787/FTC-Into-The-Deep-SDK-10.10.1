@@ -18,11 +18,14 @@ public class MeepMeepTesting {
                 .setDimensions(14.685, 13.5)
                 .build();
 
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-8, -62, Math.PI / 2))
-                .splineTo(new Vector2d(-5, -27), Math.PI/2)
-                .waitSeconds(1.0)
-                .setTangent(-Math.PI / 2)
-                .splineToLinearHeading(new Pose2d(-38, -36, -Math.PI/2), Math.PI / 2)
+        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(50, -15, -Math.PI / 4))
+                .setTangent(-Math.PI/4)
+                .splineTo(new Vector2d(58, -28), -Math.PI/2)
+                .setTangent(-Math.PI/2)
+                .splineToSplineHeading(new Pose2d(58, -60, -Math.PI /2), -Math.PI / 2)
+                .waitSeconds(1)
+                .setTangent(-Math.PI/2)
+                .lineToY(-63)
                 .build());
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_INTO_THE_DEEP_JUICE_DARK)

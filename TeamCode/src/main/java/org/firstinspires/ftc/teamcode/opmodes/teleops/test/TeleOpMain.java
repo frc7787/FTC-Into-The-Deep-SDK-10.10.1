@@ -19,7 +19,7 @@ public class TeleOpMain extends OpMode {
     private final double INTAKE_SPECIMEN_PICKUP_POSITION = 0.25;
     private final double INTAKE_CLIPPING_POSITION = 0.22;
 
-    private final double BUCKET_VERTICAL_POSITION = 39.0;
+    private final double BUCKET_VERTICAL_POSITION = 40.0;
     private final double BUCKET_HORIZONTAL_POSITION = 5;
     private final double BAR_VERTICAL_POSITION = 24.5;
     private final double BAR_HORIZONTAL_POSITION = 1.5;
@@ -91,15 +91,17 @@ public class TeleOpMain extends OpMode {
                     arm.setIntakePosition(INTAKE_SUB_PRIMED_POSITION);
                     armState = ArmState.SUB;
                 } else if (gamepad2.dpad_left) {
-                    arm.setTargetPositionInchesRobotCentric(WALL_HORIZONTAL_INCHES, WALL_VERTICAL_INCHES);
-                } else if (currentGamepad2.dpad_down) {
-                    arm.setExtensionTargetPosition(arm.targetInches() - 6);
+                    arm.setTargetPositionInchesRobotCentric(GROUND_HORIZONTAL_POSITION, GROUND_VERTICAL_POSITION);
+                } else if (gamepad2.circle) {
+                    arm.setTargetPositionInches(9.8, 6);
+                } else if (gamepad2.cross) {
+                    arm.setTargetPositionInchesRobotCentric(-3, 20);
                 } else {
                     double gamepadleftX = gamepad2.left_stick_x;
                     double gamepadleftY = -gamepad2.left_stick_y;
 
                     if (Math.abs(gamepadleftX) < 0.1) gamepadleftX = 0;
-                    if (Math.abs(gamepadleftY) < 0.1) gamepadleftY = 0;
+                    if (Math.abs(gamepadleftY) < 0.2) gamepadleftY = 0;
 
                     arm.manualControl(gamepadleftX, gamepadleftY, 10);
                 }
@@ -113,21 +115,22 @@ public class TeleOpMain extends OpMode {
                     arm.setIntakePosition(INTAKE_CLOSED_POSITION);
                 } else {
                     if (currentGamepad1.dpad_up && !previousGamepad1.dpad_up) {
-                       arm.setTargetPositionInches(arm.hExtensionTargetInches(), -1);
+                       arm.setTargetPositionInches(arm.hExtensionTargetInches(), 1);
                     } else if (currentGamepad1.dpad_down && !previousGamepad1.dpad_down) {
                         arm.setTargetPositionInches(arm.hExtensionTargetInches(), -5);
-                    } else {
-                        double gamepadleftX = gamepad2.left_stick_x;
-                        double gamepadleftY = -gamepad2.left_stick_y;
-
-                        if (Math.abs(gamepadleftX) < 0.1) gamepadleftX = 0;
-                        if (Math.abs(gamepadleftY) < 0.1) gamepadleftY = 0;
-
-                        arm.manualControl(gamepadleftX, gamepadleftY, 10);
                     }
+                    double gamepadleftX = gamepad1.right_trigger - gamepad1.left_trigger;
+                    double gamepadleftY = -gamepad1.right_stick_y;
+
+                    if (Math.abs(gamepadleftX) < 0.1) gamepadleftX = 0;
+                    if (Math.abs(gamepadleftY) < 0.2) gamepadleftY = 0;
+
+                    arm.manualControl(gamepadleftY, gamepadleftX, 10);
                 }
                 break;
         }
+
+
 
         telemetry.addData("Servo Position", arm.intakePosition());
         telemetry.addData("Arm State", armState);

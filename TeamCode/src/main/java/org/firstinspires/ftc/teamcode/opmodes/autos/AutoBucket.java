@@ -44,9 +44,9 @@ public class AutoBucket extends LinearOpMode {
                 .setTangent(Math.PI/2)
                 .splineToSplineHeading(new Pose2d(-53, -16, -Math.PI /2), Math.PI / 2)
                 .setTangent(Math.PI/2)
-                .splineToConstantHeading(new Vector2d(-58, -8), Math.PI/2)
+                .splineToConstantHeading(new Vector2d(-60, -8), Math.PI/2)
                 .setTangent(-Math.PI/2)
-                .splineToSplineHeading(new Pose2d(-58, -50, -Math.PI /2), -Math.PI / 2)
+                .splineToSplineHeading(new Pose2d(-60, -50, -Math.PI /2), -Math.PI / 2)
                 .setTangent(Math.PI/2)
                 .splineToLinearHeading(new Pose2d(-36, -12, 0), 0)
                 .setTangent(0)
@@ -92,6 +92,17 @@ public class AutoBucket extends LinearOpMode {
         }
         arm.stop();
 
+
+
         Actions.runBlocking(barToBuckets);
+
+        arm.setTargetPositionInchesRobotCentric(8, 5);
+        arm.setMaxSpeed(1.0);
+
+        elapsedTime.reset();
+
+        while (!arm.isAtPosition() || elapsedTime.seconds() > 5.0) {
+            arm.update();
+        }
     }
 }
