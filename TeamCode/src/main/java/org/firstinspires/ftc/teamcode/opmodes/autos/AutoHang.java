@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes.autos;
 
-import com.acmerobotics.roadrunner.AccelConstraint;
 import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.InstantFunction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.ProfileAccelConstraint;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
@@ -29,11 +27,11 @@ public class AutoHang extends LinearOpMode {
 
         TrajectoryActionBuilder startToBarBuilder = drive.actionBuilder(initialPose)
                 .setTangent(Math.PI / 2)
-                .splineTo(new Vector2d(2, -27), Math.PI/2);
+                .splineTo(new Vector2d(3, -27), Math.PI/2);
 
         TrajectoryActionBuilder barToObservationZoneBuilder = startToBarBuilder.endTrajectory().fresh()
                 .setTangent(-Math.PI / 2)
-                .splineToLinearHeading(new Pose2d(26, -40, Math.PI), Math.PI / 2)
+                .splineToLinearHeading(new Pose2d(26, -36, Math.PI), Math.PI / 2)
                 .setTangent(Math.PI / 2)
                 .splineToSplineHeading(new Pose2d(30, -21, -Math.PI /2), Math.PI/2)
                 .setTangent(Math.PI/2)
@@ -56,17 +54,31 @@ public class AutoHang extends LinearOpMode {
                 .splineToSplineHeading(new Pose2d(58, -56, -Math.PI /2), -Math.PI / 2)
                 .waitSeconds(1)
                 .setTangent(-Math.PI/2)
-                .lineToY(-65, null, new ProfileAccelConstraint(-70.0, 70.0));
+                .lineToY(-67, null, new ProfileAccelConstraint(-70.0, 70.0));
 
-        Action observationZoneToBar = sample2ToObservationBuilder.endTrajectory().fresh()
-
+        TrajectoryActionBuilder observationZoneToBarBuilder = sample2ToObservationBuilder.endTrajectory().fresh()
                 .setTangent(Math.PI/2)
-                .splineToSplineHeading(new Pose2d(0, -30, Math.PI /1.999), Math.PI / 2)
+                .splineToSplineHeading(new Pose2d(-3, -30, Math.PI /1.999), Math.PI / 2);
+
+        TrajectoryActionBuilder backToObservationZoneBuilder = observationZoneToBarBuilder.endTrajectory().fresh()
+                .setTangent(-Math.PI/2)
+                .splineToSplineHeading(new Pose2d(58, -56, -Math.PI/2), -Math.PI/2);
+
+        TrajectoryActionBuilder pickupSecondSpecimenBuilder = backToObservationZoneBuilder.endTrajectory().fresh()
+                .setTangent(-Math.PI/2)
+                .lineToY(-67, null, new ProfileAccelConstraint(-70.0, 70.0));
+
+        Action toBarSecondSpecimen = drive.actionBuilder(new Pose2d(58, -67, Math.PI/-2))
+                .setTangent(Math.PI/2)
+                .splineToSplineHeading(new Pose2d(-3, -27, Math.PI /2), Math.PI / 2)
                 .build();
 
+        Action observationZoneToBar = observationZoneToBarBuilder.build();
         Action barToObservationZone = barToObservationZoneBuilder.build();
         Action sample2ToObservationZone = sample2ToObservationBuilder.build();
         Action startToBar = startToBarBuilder.build();
+        Action backToObservationZone = backToObservationZoneBuilder.build();
+        Action pickupSecondSpecimen = pickupSecondSpecimenBuilder.build();
 
         while (!isStopRequested() && !opModeIsActive()) {
             Pose2d position = drive.pose;
@@ -87,7 +99,7 @@ public class AutoHang extends LinearOpMode {
         arm.setTargetPositionInchesRobotCentric(1.5, 24.5);
         elapsedTime.reset();
 
-        while (!arm.isAtPosition() || elapsedTime.seconds() > 5.0) {
+        while (!arm.isAtPosition() || elapsedTime.seconds() > 3.0) {
             telemetry.addLine("Moving To Position");
             telemetry.update();
             arm.update();
@@ -100,7 +112,7 @@ public class AutoHang extends LinearOpMode {
         arm.setMaxSpeed(0.4);
         elapsedTime.reset();
 
-        while (!arm.isAtPosition() && elapsedTime.seconds() < 3.0) {
+        while (!arm.isAtPosition() && elapsedTime.seconds() < 1.0) {
             arm.update();
         }
         arm.stop();
@@ -127,8 +139,30 @@ public class AutoHang extends LinearOpMode {
         }
         arm.stop();
 
+        arm.setTargetPositionInchesRobotCentric(1.5, 24.5);
+        elapsedTime.reset();
+
+        while (!arm.isAtPosition() && elapsedTime.seconds() < 2.0) {
+            arm.update();
+        }
+        arm.stop();
+
         Actions.runBlocking(observationZoneToBar);
 
+        arm.setExtensionTargetPosition(3);
+        arm.setMaxSpeed(0.4);
+        elapsedTime.reset();
 
+        while (!arm.isAtPosition() && elapsedTime.seconds() < 1.0) {
+            arm.update();
+        }
+        arm.stop();
+        //path to return to ob zone for second specimen
+        Actions.runBlocking(backToObservationZone);
+        //insert going to wall pickup pos
+        Actions.runBlocking(pickupSecondSpecimen);
+        //insert lifting specimen off wall
+//        Actions.runBlocking(toBarSecondSpecimen);
+        //insert placing specimen on high bar
     }
 }
