@@ -159,10 +159,12 @@ public class AutoHang extends LinearOpMode {
         arm.stop();
         //path to return to ob zone for second specimen
         Actions.runBlocking(backToObservationZone);
+
+
         //insert going to wall pickup pos
         Actions.runBlocking(pickupSecondSpecimen);
         //insert lifting specimen off wall
-//        Actions.runBlocking(toBarSecondSpecimen);
+        Actions.runBlocking(toBarSecondSpecimen);
         //insert placing specimen on high bar
     }
 }
