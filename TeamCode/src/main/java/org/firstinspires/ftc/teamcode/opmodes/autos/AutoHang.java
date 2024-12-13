@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode.opmodes.autos;
 
+import com.acmerobotics.roadrunner.AccelConstraint;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.InstantFunction;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.ProfileAccelConstraint;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
@@ -51,10 +53,10 @@ public class AutoHang extends LinearOpMode {
                 .setTangent(-Math.PI/4)
                 .splineTo(new Vector2d(58, -28), -Math.PI/2)
                 .setTangent(-Math.PI/2)
-                .splineToSplineHeading(new Pose2d(58, -60, -Math.PI /2), -Math.PI / 2)
+                .splineToSplineHeading(new Pose2d(58, -56, -Math.PI /2), -Math.PI / 2)
                 .waitSeconds(1)
                 .setTangent(-Math.PI/2)
-                .lineToY(-63);
+                .lineToY(-65, null, new ProfileAccelConstraint(-70.0, 70.0));
 
         Action observationZoneToBar = sample2ToObservationBuilder.endTrajectory().fresh()
 
@@ -116,6 +118,7 @@ public class AutoHang extends LinearOpMode {
         }
         arm.stop();
         Actions.runBlocking(sample2ToObservationZone);
+
         Actions.runBlocking(observationZoneToBar);
 
 
