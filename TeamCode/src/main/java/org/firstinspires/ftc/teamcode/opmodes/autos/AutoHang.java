@@ -119,6 +119,14 @@ public class AutoHang extends LinearOpMode {
         arm.stop();
         Actions.runBlocking(sample2ToObservationZone);
 
+        arm.setTargetPositionInches(9.8, 8.5);
+        elapsedTime.reset();
+
+        while (!arm.isAtPosition() && elapsedTime.seconds() < 2.0) {
+            arm.update();
+        }
+        arm.stop();
+
         Actions.runBlocking(observationZoneToBar);
 
 
