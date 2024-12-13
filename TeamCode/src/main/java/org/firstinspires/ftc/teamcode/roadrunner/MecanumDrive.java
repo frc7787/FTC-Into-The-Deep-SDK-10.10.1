@@ -70,7 +70,7 @@ public class MecanumDrive {
 
     // Path Profile Parameters
     public static double MAX_WHEEL_VELOCITY = 80;
-    public static double MIN_PROFILE_ACCELERATION = -35;
+    public static double MIN_PROFILE_ACCELERATION = -32.5;
     public static double MAX_PROFILE_ACCELERATION = 70;
 
     // Turn Profile Parameters (in radians)
