@@ -21,11 +21,8 @@ public class Arm {
     // Configuration
     // ---------------------------------------------------------------------------------------------
 
-    private final double EXTENSION_TICKS_PER_INCH  = 394;
-    private final double ROTATION_TICKS_PER_DEGREE = 29.03;
-
-    // Physical Properties
-    private final double INTAKE_LENGTH_INCHES = 0.0;
+    private final double EXTENSION_TICKS_PER_INCH = 394.0;
+    private final double ROTATION_TICKS_PER_DEGREE = 29.0;
     private final double ROTATION_X_OFFSET_INCHES = 9;
     private final double ROTATION_Y_OFFSET_INCHES = -4.75;
     private final double ARM_STARTING_ANGLE_DEGREES = -11.0;
@@ -341,8 +338,7 @@ public class Arm {
     public double degrees() { return rotationMotor.getCurrentPosition() / ROTATION_TICKS_PER_DEGREE ; }
 
     public double inches() {
-        return (leaderExtensionMotor.getCurrentPosition() / EXTENSION_TICKS_PER_INCH)
-                + INTAKE_LENGTH_INCHES;
+        return (leaderExtensionMotor.getCurrentPosition() / EXTENSION_TICKS_PER_INCH);
     }
 
     public double intakePosition() {

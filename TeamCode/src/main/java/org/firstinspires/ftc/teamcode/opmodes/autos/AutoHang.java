@@ -68,9 +68,15 @@ public class AutoHang extends LinearOpMode {
                 .setTangent(-Math.PI/2)
                 .lineToY(-70.069, null, new ProfileAccelConstraint(-70.0, 70.0));
 
-        Action toBarSecondSpecimen = drive.actionBuilder(new Pose2d(58, -67, Math.PI/-2))
+        TrajectoryActionBuilder toBarSecondSpecimenBuilder = drive.actionBuilder(new Pose2d(58, -67, Math.PI/-2))
                 .setTangent(Math.PI/2)
-                .splineToSplineHeading(new Pose2d(-0.5, -27, Math.PI /2), Math.PI / 2)
+                .splineToSplineHeading(new Pose2d(-0.5, -27, Math.PI /2), Math.PI / 2);
+
+        Action bookItToObservationZone = toBarSecondSpecimenBuilder.endTrajectory().fresh()
+                .setTangent(-Math.PI/2)
+                .splineTo(new Vector2d(30, -60), 0)
+                .setTangent(0)
+                .splineToConstantHeading(new Vector2d(60, -60), 0)
                 .build();
 
         Action observationZoneToBar = observationZoneToBarBuilder.build();
@@ -79,6 +85,8 @@ public class AutoHang extends LinearOpMode {
         Action startToBar = startToBarBuilder.build();
         Action backToObservationZone = backToObservationZoneBuilder.build();
         Action pickupSecondSpecimen = pickupSecondSpecimenBuilder.build();
+        Action toBarSecondSpecimen = toBarSecondSpecimenBuilder.build();
+
 
         while (!isStopRequested() && !opModeIsActive()) {
             Pose2d position = drive.pose;
@@ -201,5 +209,6 @@ public class AutoHang extends LinearOpMode {
         arm.stop();
 
         //insert placing specimen on high bar
+        Actions.runBlocking(bookItToObservationZone);
     }
 }
