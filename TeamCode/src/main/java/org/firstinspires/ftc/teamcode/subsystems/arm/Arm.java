@@ -15,46 +15,10 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.utility.*;
+import static org.firstinspires.ftc.teamcode.subsystems.arm.ArmConstants.*;
+import static org.firstinspires.ftc.teamcode.subsystems.arm.ArmConversions.*;
 
 public class Arm {
-    // ---------------------------------------------------------------------------------------------
-    // Configuration
-    // ---------------------------------------------------------------------------------------------
-
-    private final double EXTENSION_TICKS_PER_INCH = 394.0;
-    private final double ROTATION_TICKS_PER_DEGREE = 29.0;
-    private final double ROTATION_X_OFFSET_INCHES = 9;
-    private final double ROTATION_Y_OFFSET_INCHES = -4.75;
-    private final double ARM_STARTING_ANGLE_DEGREES = -11.0;
-
-    private final double MIN_ROTATION_DEGREES = 0;
-    private final double MAX_ROTATION_DEGREES = 90;
-    private final double MIN_EXTENSION_INCHES = 11;
-    private final double MAX_EXTENSION_INCHES = 45;
-
-    private final double MAX_EXTENSION_POWER = 1.0;
-    private final double MIN_EXTENSION_POWER = -1.0;
-    private final double MAX_ROTATION_POWER  = 1.0;
-    private final double MIN_ROTATION_POWER  = -1.0;
-
-    private double maxSpeed;
-
-    // Miscellaneous
-    private final double EXTENSION_HOMING_POWER = -0.8;
-    private final double ROTATION_HOMING_POWER  = -0.6;
-
-    private final int EXTENSION_POSITION_THRESHOLD = 150;
-    private final int EXTENSION_NEGATIVE_THRESHOLD = (int) (2 / 1.5 * EXTENSION_POSITION_THRESHOLD);
-    private final int ROTATION_POSITION_THRESHOLD  = 36;
-
-    private final double DEFAULT_MANUAL_SPEED = 2; // In/Sec
-
-    private final double[] START_POSITION_XY = new double[]{11.0, 0.0};
-
-    // Intake
-    private final double INTAKE_OPEN_POSITION   = 0.0;
-    private final double INTAKE_CLOSED_POSITION = 0.5;
-
     // ---------------------------------------------------------------------------------------------
     // Hardware
     // ---------------------------------------------------------------------------------------------
@@ -79,6 +43,8 @@ public class Arm {
     private int rotationTargetPosition, extensionTargetPosition;
     private int rotationPosition, extensionPosition;
     private double vExtensionTargetInches, hExtensionTargetInches;
+
+    private double maxSpeed;
 
     private boolean isFirstManualControlIteration;
     private ElapsedTime manualControlTimer;
@@ -274,27 +240,6 @@ public class Arm {
                 MotorUtility.reset(rotationMotor, leaderExtensionMotor, followerExtensionMotor);
                 break;
         }
-    }
-
-    private int rotationDegreesToTicks(double degrees) {
-        return (int) ((degrees + 11) * ROTATION_TICKS_PER_DEGREE) + 194;
-    }
-
-    private int extensionInchesToTicks(double inches) {
-        return Math.max(0, (int) (inches * EXTENSION_TICKS_PER_INCH));
-    }
-
-    @NonNull private double[] cartesianToPolar(double horizontalInches, double verticalInches) {
-        double extensionInches = Math.sqrt(
-                Math.pow(horizontalInches, 2.0) +
-                Math.pow(verticalInches, 2.0) +
-                - Math.pow(1.5, 2)
-        ) - MIN_EXTENSION_INCHES;
-
-        double rotationDegrees = Math.toDegrees(
-                Math.atan(verticalInches / horizontalInches) - Math.atan(1.5 / (extensionInches + MIN_EXTENSION_INCHES)));
-
-        return new double[] {rotationDegrees, extensionInches};
     }
 
     public void setTargetPositionInches(double hExtensionTargetInches, double vExtensionTargetInches) {
