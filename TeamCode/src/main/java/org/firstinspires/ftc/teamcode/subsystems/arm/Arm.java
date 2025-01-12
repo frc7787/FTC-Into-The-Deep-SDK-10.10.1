@@ -200,12 +200,14 @@ public class Arm {
            manualControlTimer.reset();
            isFirstManualControlIteration = false;
        } else {
-           hExtensionTargetInches += (hInput * manualControlTimer.seconds() * speed);
-           vExtensionTargetInches += (vInput * manualControlTimer.seconds() * speed);
-           manualControlTimer.reset();
-           if (hExtensionTargetInches > 30) hExtensionTargetInches = 30;
-           if (vExtensionTargetInches < -5) vExtensionTargetInches = -5;
-           cartesianToPolar(hExtensionTargetInches, vExtensionTargetInches);
+            hExtensionTargetInches += (hInput * manualControlTimer.seconds() * speed);
+            vExtensionTargetInches += (vInput * manualControlTimer.seconds() * speed);
+            manualControlTimer.reset();
+            if (hExtensionTargetInches > 30) hExtensionTargetInches = 30;
+            if (vExtensionTargetInches < -5) vExtensionTargetInches = -5;
+            double[] polarCoordinates = cartesianToPolar(hExtensionTargetInches, vExtensionTargetInches);
+            rotationTargetPosition = rotationDegreesToTicks(polarCoordinates[0]);
+            extensionTargetPosition = extensionInchesToTicks(polarCoordinates[1]);
        }
     }
 
@@ -274,26 +276,34 @@ public class Arm {
         }
     }
 
-    private void cartesianToPolar(double hExtensionInches, double vExtensionInches) {
+    private int rotationDegreesToTicks(double degrees) {
+        return (int) ((degrees + 11) * ROTATION_TICKS_PER_DEGREE) + 194;
+    }
+
+    private int extensionInchesToTicks(double inches) {
+        return Math.max(0, (int) (inches * EXTENSION_TICKS_PER_INCH));
+    }
+
+    @NonNull private double[] cartesianToPolar(double horizontalInches, double verticalInches) {
         double extensionInches = Math.sqrt(
-                Math.pow(hExtensionInches, 2.0) +
-                Math.pow(vExtensionInches, 2.0) +
+                Math.pow(horizontalInches, 2.0) +
+                Math.pow(verticalInches, 2.0) +
                 - Math.pow(1.5, 2)
         ) - MIN_EXTENSION_INCHES;
 
         double rotationDegrees = Math.toDegrees(
-                Math.atan(vExtensionInches / hExtensionInches) - Math.atan(1.5 / (extensionInches + MIN_EXTENSION_INCHES)));
+                Math.atan(verticalInches / horizontalInches) - Math.atan(1.5 / (extensionInches + MIN_EXTENSION_INCHES)));
 
-        rotationTargetPosition = (int) ((rotationDegrees + 11) * ROTATION_TICKS_PER_DEGREE) + (int) (194);
-        extensionTargetPosition = (int) ((extensionInches)* EXTENSION_TICKS_PER_INCH);
-        if (extensionTargetPosition < 0) extensionTargetPosition = 0;
+        return new double[] {rotationDegrees, extensionInches};
     }
 
     public void setTargetPositionInches(double hExtensionTargetInches, double vExtensionTargetInches) {
         if (hExtensionTargetInches >= 30) hExtensionTargetInches = 30;
         this.hExtensionTargetInches = hExtensionTargetInches;
         this.vExtensionTargetInches = vExtensionTargetInches;
-        cartesianToPolar(hExtensionTargetInches,vExtensionTargetInches);
+        double[] polarCoordinates = cartesianToPolar(hExtensionTargetInches,vExtensionTargetInches);
+        rotationTargetPosition = rotationDegreesToTicks(polarCoordinates[0]);
+        extensionTargetPosition = extensionInchesToTicks(polarCoordinates[1]);
     }
 
     public void setTargetPositionInchesRobotCentric(double hExtensionTargetInches, double vExtensionTargetInches) {

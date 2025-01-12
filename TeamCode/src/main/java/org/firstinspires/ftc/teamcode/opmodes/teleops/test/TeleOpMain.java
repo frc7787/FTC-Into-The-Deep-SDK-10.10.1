@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.opmodes.teleops.test;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.LED;
 
 import org.firstinspires.ftc.teamcode.roadrunner.DriveMode;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
@@ -43,8 +42,6 @@ public class TeleOpMain extends OpMode {
 
     private ArmState armState;
 
-    private LED leftLEDChannelOne, leftLEDChannelTwo, rightLEDChannelOne, rightLEDChannelTwo;
-
     @Override public void init() {
         drive = new MecanumDrive.Builder(hardwareMap)
                 .setDriveMode(DriveMode.ROBOT_CENTRIC)
@@ -56,11 +53,6 @@ public class TeleOpMain extends OpMode {
         currentGamepad1 = new Gamepad();
 
         armState = ArmState.HOMING;
-
-        leftLEDChannelOne = hardwareMap.get(LED.class, "leftLEDChannelOne");
-        leftLEDChannelTwo = hardwareMap.get(LED.class, "leftLEDChannelTwo");
-        rightLEDChannelOne = hardwareMap.get(LED.class, "rightLEDChannelOne");
-        rightLEDChannelTwo = hardwareMap.get(LED.class, "rightLEDChannelTwo");
     }
 
     @Override public void loop() {
@@ -90,11 +82,7 @@ public class TeleOpMain extends OpMode {
                 if (arm.state() != Arm.ArmState.HOMING) { armState = ArmState.NEUTRAL; }
                 break;
             case NEUTRAL:
-                leftLEDChannelOne.enable(false);
-                leftLEDChannelTwo.enable(false);
-                rightLEDChannelOne.enable(false);
-                rightLEDChannelTwo.enable(false);
-                gamepad1.stopRumble();
+                gamepad2.stopRumble();
                 if (gamepad2.triangle) {
                     arm.setTargetPositionInchesRobotCentric(BUCKET_HORIZONTAL_POSITION, BUCKET_VERTICAL_POSITION);
                 } else if (gamepad2.square) {
@@ -124,10 +112,6 @@ public class TeleOpMain extends OpMode {
                 }
                 break;
             case SUB:
-                leftLEDChannelOne.enable(true);
-                leftLEDChannelTwo.enable(true);
-                rightLEDChannelOne.enable(true);
-                rightLEDChannelTwo.enable(true);
                 gamepad2.rumble(Gamepad.RUMBLE_DURATION_CONTINUOUS);
                 arm.setIntakePosition(INTAKE_SUB_PRIMED_POSITION);
 
