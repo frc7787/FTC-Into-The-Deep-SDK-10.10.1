@@ -108,7 +108,7 @@ public class TeleOpMain extends OpMode {
                     if (Math.abs(gamepadleftX) < 0.1) gamepadleftX = 0;
                     if (Math.abs(gamepadleftY) < 0.2) gamepadleftY = 0;
 
-                    arm.manualControl(gamepadleftX, gamepadleftY, 10);
+                    arm.manualControlCartesian(gamepadleftX, gamepadleftY, 10);
                 }
                 break;
             case SUB:
@@ -131,7 +131,7 @@ public class TeleOpMain extends OpMode {
                     if (Math.abs(gamepadleftX) < 0.1) gamepadleftX = 0;
                     if (Math.abs(gamepadleftY) < 0.2) gamepadleftY = 0;
 
-                    arm.manualControl(gamepadleftY, gamepadleftX, 10);
+                    arm.manualControlCartesian(gamepadleftY, gamepadleftX, 10);
                 }
                 break;
         }

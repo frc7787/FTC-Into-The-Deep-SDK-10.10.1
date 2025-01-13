@@ -161,24 +161,23 @@ public class Arm {
         leaderExtensionMotor.setPower(0);
     }
 
-    public void manualControl(double hInput, double vInput, double speed) {
-       if (isFirstManualControlIteration) {
-           manualControlTimer.reset();
-           isFirstManualControlIteration = false;
-       } else {
-            hExtensionTargetInches += (hInput * manualControlTimer.seconds() * speed);
-            vExtensionTargetInches += (vInput * manualControlTimer.seconds() * speed);
-            manualControlTimer.reset();
-            if (hExtensionTargetInches > 30) hExtensionTargetInches = 30;
-            if (vExtensionTargetInches < -5) vExtensionTargetInches = -5;
-            double[] polarCoordinates = cartesianToPolar(hExtensionTargetInches, vExtensionTargetInches);
-            rotationTargetPosition = rotationDegreesToTicks(polarCoordinates[0]);
-            extensionTargetPosition = extensionInchesToTicks(polarCoordinates[1]);
-       }
+    public void manualControlPolar(double thetaInput, double radiusInput, double speed) {
+
     }
 
-    public void manualControl(double hInput, double vInput) {
-        manualControl(hInput, vInput, DEFAULT_MANUAL_SPEED);
+    public void manualControlCartesian(double xInput, double yInput, double speed) {
+        hExtensionTargetInches += (xInput * manualControlTimer.seconds() * speed);
+        vExtensionTargetInches += (yInput * manualControlTimer.seconds() * speed);
+        manualControlTimer.reset();
+        if (hExtensionTargetInches > 30) hExtensionTargetInches = 30;
+        if (vExtensionTargetInches < -5) vExtensionTargetInches = -5;
+        double[] polarCoordinates = cartesianToPolar(hExtensionTargetInches, vExtensionTargetInches);
+        rotationTargetPosition = rotationDegreesToTicks(polarCoordinates[0]);
+        extensionTargetPosition = extensionInchesToTicks(polarCoordinates[1]);
+    }
+
+    public void manualControlCartesian(double xInput, double yInput) {
+        manualControlCartesian(xInput, yInput, DEFAULT_MANUAL_SPEED);
     }
 
     public void resetManualControl() {
